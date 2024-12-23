@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PurplePuffin", "PurplePuffin\PurplePuffin.csproj", "{3BB3C76E-1F0D-4E27-9663-B37CB29A70CB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3BB3C76E-1F0D-4E27-9663-B37CB29A70CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BB3C76E-1F0D-4E27-9663-B37CB29A70CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BB3C76E-1F0D-4E27-9663-B37CB29A70CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BB3C76E-1F0D-4E27-9663-B37CB29A70CB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
