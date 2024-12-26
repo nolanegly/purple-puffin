@@ -5,18 +5,18 @@ using Microsoft.Xna.Framework.Input;
 
 namespace PurplePuffin;
 
-
 public class PurplePuffinGame : Game
 {
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
 
-    private SpriteFont _arialFont;
-    private Vector2 _titlePos;
-    private Vector2 _gameplayPos;
+    private SharedContent _sharedContent;
     
     private SceneType _sceneType;
+    private Scene _activeScene;
     
+    private TitleScene _titleScene;
+    private GameScene _gameScene;
 
     public PurplePuffinGame()
     {
@@ -25,24 +25,27 @@ public class PurplePuffinGame : Game
         IsMouseVisible = true;
 
         _sceneType = SceneType.Title;
+        _sharedContent = new SharedContent();
     }
 
     protected override void Initialize()
     {
-        // TODO: Add your initialization logic here
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+        _titleScene = new TitleScene(GraphicsDevice, _spriteBatch);
+        _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
+        
+        _activeScene = _titleScene;
+        
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
-        _spriteBatch = new SpriteBatch(GraphicsDevice);
-
-        _arialFont = Content.Load<SpriteFont>("arial");
+        _sharedContent.ArialFont = Content.Load<SpriteFont>("arial");
         
-        var viewport = GraphicsDevice.Viewport;
-        _titlePos = new Vector2(viewport.Width / 2, viewport.Height / 2);
-        _gameplayPos = new Vector2(viewport.Width / 2, viewport.Height / 2);
+        _titleScene.LoadContent(_sharedContent);
+        _gameScene.LoadContent(_sharedContent);
     }
 
     protected override void Update(GameTime gameTime)
@@ -51,12 +54,18 @@ public class PurplePuffinGame : Game
             Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-        if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+        // Having this kind of conditional logic for input based on active scene in the update loop
+        // is going to get awkward. We'll extract this out in the future so each scene handles input itself.
+        if (_activeScene.SceneType == SceneType.Title)
         {
-            _sceneType = SceneType.Game;
+            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+            {
+                _activeScene = _gameScene;
+            }
         }
         
-
+        _activeScene.Update(gameTime);
+        
         base.Update(gameTime);
     }
 
@@ -65,35 +74,10 @@ public class PurplePuffinGame : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin();
-        
-        if (_sceneType == SceneType.Title)
-        {
-            var message = "Title scene";
-            var messageOrigin = _arialFont.MeasureString(message) / 2;
-            _spriteBatch.DrawString(_arialFont, message, _titlePos, Color.LightGreen,
-                0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
-        }
-        else if (_sceneType == SceneType.Game)
-        {
-            // Draw game message
-            var message = "Game scene";
-            var messageOrigin = _arialFont.MeasureString(message) / 2;
-            _spriteBatch.DrawString(_arialFont, message, _titlePos, Color.LightGreen,
-                0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
-        }
-        else
-        {
-            throw new Exception($"Unhandled Scene type: ${_sceneType}");
-        }
-
+        _activeScene.Draw(gameTime);
         _spriteBatch.End();
 
         base.Draw(gameTime);
     }
 }
 
-public enum SceneType
-{
-    Title,
-    Game
-}
