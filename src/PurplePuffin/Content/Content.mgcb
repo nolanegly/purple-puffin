@@ -20,3 +20,27 @@
 /processorParam:TextureFormat=Compressed
 /build:Arial.spritefont;arial.spritefont
 
+#begin music/Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:music/Juhani Junkala [Chiptune Adventures] 1. Stage 1.ogg
+
+#begin music/Juhani Junkala [Chiptune Adventures] 2. Stage 2.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:music/Juhani Junkala [Chiptune Adventures] 2. Stage 2.ogg
+
+#begin music/Juhani Junkala [Chiptune Adventures] 3. Boss Fight.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:music/Juhani Junkala [Chiptune Adventures] 3. Boss Fight.ogg
+
+#begin music/Juhani Junkala [Chiptune Adventures] 4. Stage Select.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:music/Juhani Junkala [Chiptune Adventures] 4. Stage Select.ogg
+

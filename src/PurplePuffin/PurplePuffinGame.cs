@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 
 namespace PurplePuffin;
 
@@ -17,6 +18,8 @@ public class PurplePuffinGame : Game
     
     private TitleScene _titleScene;
     private GameScene _gameScene;
+
+    private Song _backgroundSong;
 
     public PurplePuffinGame()
     {
@@ -46,6 +49,17 @@ public class PurplePuffinGame : Game
         
         _titleScene.LoadContent(_sharedContent);
         _gameScene.LoadContent(_sharedContent);
+        
+        
+        // Naive "how do I make this work" code for music
+        _backgroundSong = Content.Load<Song>("music\\Juhani Junkala [Chiptune Adventures] 4. Stage Select");
+        
+        // stop if something else playing/paused
+        if (MediaPlayer.State != MediaState.Stopped)
+            MediaPlayer.Stop();
+        
+        MediaPlayer.Play(_backgroundSong);
+        MediaPlayer.IsRepeating = true;
     }
 
     protected override void Update(GameTime gameTime)
@@ -63,6 +77,21 @@ public class PurplePuffinGame : Game
                 _activeScene = _gameScene;
             }
         }
+        
+        // Naive implementation to control music
+        if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            MediaPlayer.Volume += 0.05f;
+        if (Keyboard.GetState().IsKeyDown(Keys.Down))
+            MediaPlayer.Volume -= 0.05f;
+        if (Keyboard.GetState().IsKeyDown(Keys.Left))
+        {
+            System.Diagnostics.Debug.WriteLine($"*** GameHasControl: {MediaPlayer.GameHasControl}");
+            if (MediaPlayer.State != MediaState.Playing)
+                MediaPlayer.Resume();
+            else
+                MediaPlayer.Pause();
+        }
+        
         
         _activeScene.Update(gameTime);
         
