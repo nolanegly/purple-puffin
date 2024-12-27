@@ -27,8 +27,9 @@ public class TitleScene : Scene
         _titlePos = new Vector2(viewport.Width / 2, viewport.Height / 2);
     }
     
-    public override void Update(GameTime gameTime)
+    public override Event[] Update(GameTime gameTime)
     {
+        return [];
     }
 
     public override void Draw(GameTime gameTime)

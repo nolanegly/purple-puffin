@@ -4,14 +4,15 @@ namespace PurplePuffin;
 
 public enum SceneType
 {
-    Undefined,
+    Uninitialized,
     Title,
+    MainMenu,
     Game
 }
 
 public abstract class Scene
 {
-    public SceneType SceneType = SceneType.Undefined;
-    public abstract void Update(GameTime gameTime);
+    public SceneType SceneType = SceneType.Uninitialized;
+    public abstract Event[] Update(GameTime gameTime);
     public abstract void Draw(GameTime gameTime);
 }
