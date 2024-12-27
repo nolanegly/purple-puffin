@@ -13,7 +13,6 @@ public class PurplePuffinGame : Game
 
     private SharedContent _sharedContent;
     
-    private SceneType _sceneType;
     private Scene _activeScene;
     
     private TitleScene _titleScene;
@@ -27,7 +26,6 @@ public class PurplePuffinGame : Game
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
-        _sceneType = SceneType.Title;
         _sharedContent = new SharedContent();
     }
 
