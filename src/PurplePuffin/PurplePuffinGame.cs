@@ -18,6 +18,7 @@ public class PurplePuffinGame : Game
     
     private TitleScene _titleScene;
     private MainMenuScene _mainMenuScene;
+    private OptionsMenuScene _optionsMenuScene;
     private GameScene _gameScene;
 
     private Song _backgroundSong;
@@ -35,11 +36,16 @@ public class PurplePuffinGame : Game
     {
         // Initialize Myra (the UI library) 
         MyraEnvironment.Game = this;
+
+        // Set initial starting volume to music player before loading Options screen,
+        // so the UI controls will be set to a matching state
+        MediaPlayer.Volume = Defaults.MusicPlayerVolume;
         
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         _titleScene = new TitleScene(GraphicsDevice, _spriteBatch);
         _mainMenuScene = new MainMenuScene(GraphicsDevice);
+        _optionsMenuScene = new OptionsMenuScene(GraphicsDevice);
         _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
         
         _activeScene = _titleScene;
@@ -53,6 +59,7 @@ public class PurplePuffinGame : Game
         
         _titleScene.LoadContent(_sharedContent);
         _mainMenuScene.LoadContent();
+        _optionsMenuScene.LoadContent();
         _gameScene.LoadContent(_sharedContent);
         
         
@@ -62,7 +69,7 @@ public class PurplePuffinGame : Game
         // stop if something else playing/paused
         if (MediaPlayer.State != MediaState.Stopped)
             MediaPlayer.Stop();
-        
+
         MediaPlayer.Play(_backgroundSong);
         MediaPlayer.IsRepeating = true;
     }
@@ -83,21 +90,6 @@ public class PurplePuffinGame : Game
                 _activeScene = _mainMenuScene;
             }
         }
-        
-        // Naive implementation to control music
-        if (Keyboard.GetState().IsKeyDown(Keys.Up))
-            MediaPlayer.Volume += 0.05f;
-        if (Keyboard.GetState().IsKeyDown(Keys.Down))
-            MediaPlayer.Volume -= 0.05f;
-        if (Keyboard.GetState().IsKeyDown(Keys.Left))
-        {
-            System.Diagnostics.Debug.WriteLine($"*** GameHasControl: {MediaPlayer.GameHasControl}");
-            if (MediaPlayer.State != MediaState.Playing)
-                MediaPlayer.Resume();
-            else
-                MediaPlayer.Pause();
-        }
-        
         
         var events = _activeScene.Update(gameTime);
 
@@ -120,6 +112,12 @@ public class PurplePuffinGame : Game
             //    have been updated, potentially throwing the average elapsed time...dunno if that matters?)
             if (e.EventType == EventType.StartNewGameRequested)
                 _activeScene = _gameScene;
+
+            if (e.EventType == EventType.MainMenuRequested)
+                _activeScene = _mainMenuScene;
+            
+            if (e.EventType == EventType.OptionsMenuRequested)
+                _activeScene = _optionsMenuScene;
         }
         
         base.Update(gameTime);

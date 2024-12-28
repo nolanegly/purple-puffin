@@ -5,7 +5,9 @@ namespace PurplePuffin;
 public enum EventType
 {
     Uninitialized,
+    MainMenuRequested,
     StartNewGameRequested,
+    OptionsMenuRequested,
     QuitGameRequested,
 }
 

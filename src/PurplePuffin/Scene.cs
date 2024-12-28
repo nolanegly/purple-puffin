@@ -7,6 +7,7 @@ public enum SceneType
     Uninitialized,
     Title,
     MainMenu,
+    OptionsMenu,
     Game
 }
 

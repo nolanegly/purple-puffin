@@ -1,0 +1,13 @@
+<Project>
+  <Project.ExportOptions Namespace="PurplePuffin" Class="OptionsMenuMyra" OutputPath="C:\dev\purple-puffin\src\PurplePuffin" />
+  <Panel Background="#711ED6FF">
+    <Label Text="Purple Puffin - Options" TextColor="#F8FFC7FF" Top="20" HorizontalAlignment="Center" />
+    <Panel Top="100" MinWidth="0" Height="200" >
+      <Label Text="Music Volume" TextColor="#F8FFC7FF" Left="80" />
+      <HorizontalSlider HorizontalAlignment="Center"  Width="400" Tooltip="Adjust the volume of music" Id="_hsMusicVolume" />
+    </Panel>
+    <VerticalMenu HorizontalAlignment="Center" VerticalAlignment="Center" LabelColor="#F8FFC7FF" SelectionHoverBackground="#3F1178C0" SelectionBackground="#711ED6C0" Border="#00000000" Id="_optionsMenu">
+      <MenuItem Text="Back to Main Menu" Id="_menuBackToMainMenu" />
+    </VerticalMenu>
+  </Panel>
+</Project>
