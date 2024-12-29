@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 namespace PurplePuffin;
 
@@ -7,7 +9,8 @@ public class GameScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-
+    private readonly List<Event> _eventsToReturn = new();
+    
     private SharedContent _sharedContent;
     private Vector2 _gameplayPos;
 
@@ -29,7 +32,13 @@ public class GameScene : Scene
     
     public override Event[] Update(GameTime gameTime)
     {
-        return [];
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
+            Keyboard.GetState().IsKeyDown(Keys.Escape))
+            _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
+
+        var result = _eventsToReturn.ToArray();
+        _eventsToReturn.Clear();
+        return result;
     }
 
     public override void Draw(GameTime gameTime)

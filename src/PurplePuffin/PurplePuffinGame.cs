@@ -1,7 +1,5 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Myra;
 
@@ -76,27 +74,10 @@ public class PurplePuffinGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-            Keyboard.GetState().IsKeyDown(Keys.Escape))
-            Exit();
-
-        // Having this kind of conditional logic for input based on active scene in the update loop
-        // is going to get awkward. We'll extract this out in the future so each scene handles input itself.
-        var currSceneType = _activeScene.SceneType;
-        if (currSceneType == SceneType.Title)
-        {
-            if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-            {
-                _activeScene = _mainMenuScene;
-            }
-        }
-        
         var events = _activeScene.Update(gameTime);
 
         foreach (var e in events)
         {
-            // TODO: the code detecting ESC input at the top of the method should probably generate this event
-            // rather than handle directly
             if (e.EventType == EventType.QuitGameRequested)
                 Exit();
 

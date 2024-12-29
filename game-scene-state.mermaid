@@ -1,0 +1,12 @@
+---
+title: Purple Puffin
+---
+stateDiagram-v2
+    [*] --> Title
+
+    Title--> MainMenu
+    MainMenu--> OptionMenu
+    OptionMenu --> MainMenu
+    MainMenu --> gameplay
+    MainMenu --> [*]
+    gameplay --> [*]
