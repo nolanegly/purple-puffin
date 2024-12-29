@@ -32,8 +32,8 @@ public class GameScene : Scene
     
     public override Event[] Update(GameTime gameTime)
     {
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
-            Keyboard.GetState().IsKeyDown(Keys.Escape))
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
+                                                              Keyboard.GetState().IsKeyDown(Keys.Escape))
             _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
 
         var result = _eventsToReturn.ToArray();

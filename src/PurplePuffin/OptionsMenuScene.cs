@@ -12,7 +12,6 @@ public class OptionsMenuScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
     private readonly Desktop _desktop = new();
-    
     private readonly List<Event> _eventsToReturn = new();
 
     public OptionsMenuScene(GraphicsDevice graphicsDevice)

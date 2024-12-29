@@ -10,10 +10,10 @@ public class MainMenuScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-    private readonly Desktop _desktop = new();
-
     private readonly List<Event> _eventsToReturn = new();
 
+    private readonly Desktop _desktop = new();
+    
     private float _transitionDegree = 0.0f;
     private readonly Texture2D _placeholderPixel;
     
