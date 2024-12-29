@@ -9,15 +9,23 @@ namespace PurplePuffin;
 public class MainMenuScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
+    private readonly SpriteBatch _spriteBatch;
     private readonly Desktop _desktop = new();
 
-    private readonly List<Event> _eventsToReturn = new(); 
+    private readonly List<Event> _eventsToReturn = new();
+
+    private float _transitionDegree = 0.0f;
+    private readonly Texture2D _placeholderPixel;
     
-    public MainMenuScene(GraphicsDevice graphicsDevice)
+    public MainMenuScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneType.MainMenu;
 
         _graphicsDevice = graphicsDevice;
+        _spriteBatch = spriteBatch;
+        
+        _placeholderPixel = new Texture2D(_graphicsDevice, 1, 1);
+        _placeholderPixel.SetData<Color>(new Color[] { Color.Black });    
     }
 
     public void LoadContent()
@@ -35,6 +43,15 @@ public class MainMenuScene : Scene
     
     public override Event[] Update(GameTime gameTime)
     {
+        if (_transitionDegree > 0.0f)
+            _transitionDegree += 0.07f;
+
+        if (_transitionDegree >= 1.0f)
+        {
+            _transitionDegree = 0.0f;
+            _eventsToReturn.Add(new Event(EventType.OptionsMenuRequested));
+        }
+        
         var result = _eventsToReturn.ToArray();
         _eventsToReturn.Clear();
         return result;
@@ -44,6 +61,15 @@ public class MainMenuScene : Scene
     {
         _graphicsDevice.Clear(Color.Black);
         _desktop.Render();
+
+        // If we're transitioning, draw the fade out
+        if (_transitionDegree > 0.0f)
+        {
+            _spriteBatch.Draw(_placeholderPixel, new Vector2(0, 0), null, 
+                new Color(0, 0, 0, _transitionDegree), 0f, Vector2.Zero, 
+                new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height),
+                SpriteEffects.None, 0);
+        }
     }
     
     private void MenuStartNewGameOnSelected(object sender, EventArgs e)
@@ -53,7 +79,7 @@ public class MainMenuScene : Scene
     
     private void MenuOptionsOnSelected(object sender, EventArgs e)
     {
-        _eventsToReturn.Add(new Event(EventType.OptionsMenuRequested));
+        _transitionDegree = 0.01f;
     }
     
     private void MenuQuitOnSelected(object sender, EventArgs e)

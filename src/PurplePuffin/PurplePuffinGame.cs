@@ -44,7 +44,7 @@ public class PurplePuffinGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         _titleScene = new TitleScene(GraphicsDevice, _spriteBatch);
-        _mainMenuScene = new MainMenuScene(GraphicsDevice);
+        _mainMenuScene = new MainMenuScene(GraphicsDevice, _spriteBatch);
         _optionsMenuScene = new OptionsMenuScene(GraphicsDevice);
         _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
         
