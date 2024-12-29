@@ -4,6 +4,8 @@
 - [X] Add a main menu screen with Myra (UI library)
 - [X] Add an options screen with a music volume control
   - will acquaint me with UI control library
+- [X] Add a fade out transition effect between two scenes
+- [ ] Add general scene transition support
 - [ ] Add a credits screen that cites music source
   - Juhani Junkala, https://juhanijunkala.com/
   - music tracks have been released under CC0 creative commons license
@@ -26,3 +28,4 @@
 - [ ] Style the Myra scenes
   - Font/text size
 - [ ] Automatically set the version on Main Menu from assembly's value
+- [ ] Play sound effects when clicking menu items
