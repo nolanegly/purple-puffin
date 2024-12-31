@@ -18,6 +18,11 @@
 - [ ] Deal with resolution changes
 - [ ] Deal with window size changes
 - [ ] Deal with gamepad disconnecting during play
+- [ ] Investigate augmenting/replacing the SceneState with a .NET library for state machines
+  - Instead of recording OldState and NewState on a "Transition" SceneType, it might make more sense
+    to define each allowed transition between states, e.g. TitleToMainMenuTransition, MainMenuToOptionsMenuTransition,
+    etc. But that might be a lot of transition nodes to add to the state chart, and harder to manage than a
+    single reusable Transitioning state with Old and New properties.
 
 
 # Polish
