@@ -1,19 +1,10 @@
 using System;
 
-namespace PurplePuffin;
-
-public enum EventType
-{
-    Uninitialized,
-    MainMenuRequested,
-    StartNewGameRequested,
-    OptionsMenuRequested,
-    QuitGameRequested,
-}
+namespace PurplePuffin.Events;
 
 public class Event
 {
-    public EventType EventType { get; init; }
+    public EventType EventType { get; }
 
     public Event(EventType eventType)
     {

@@ -1,15 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
+using PurplePuffin.Events;
 
-namespace PurplePuffin;
-
-public enum SceneType
-{
-    Uninitialized,
-    Title,
-    MainMenu,
-    OptionsMenu,
-    Game
-}
+namespace PurplePuffin.SceneManagement;
 
 public abstract class Scene
 {

@@ -2,6 +2,8 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using Myra;
+using PurplePuffin.Events;
+using PurplePuffin.SceneManagement;
 
 namespace PurplePuffin;
 
