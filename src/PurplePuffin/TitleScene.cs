@@ -19,7 +19,7 @@ public class TitleScene : Scene
 
     public TitleScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
-        SceneType = SceneType.Title;
+        SceneType = SceneTypeEnum.Title;
         
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;

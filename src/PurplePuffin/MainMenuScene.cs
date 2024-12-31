@@ -21,7 +21,7 @@ public class MainMenuScene : Scene
     
     public MainMenuScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
-        SceneType = SceneType.MainMenu;
+        SceneType = SceneTypeEnum.MainMenu;
 
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;

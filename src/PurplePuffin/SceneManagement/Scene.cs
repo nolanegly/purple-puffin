@@ -5,7 +5,7 @@ namespace PurplePuffin.SceneManagement;
 
 public abstract class Scene
 {
-    public SceneType SceneType = SceneType.Uninitialized;
+    public SceneTypeEnum SceneType = SceneTypeEnum.Uninitialized;
     public abstract Event[] Update(GameTime gameTime);
     public abstract void Draw(GameTime gameTime);
 }

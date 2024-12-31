@@ -18,7 +18,7 @@ public class GameScene : Scene
 
     public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
-        SceneType = SceneType.Game;
+        SceneType = SceneTypeEnum.Game;
         
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;

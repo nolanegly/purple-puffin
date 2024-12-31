@@ -18,7 +18,7 @@ public class OptionsMenuScene : Scene
 
     public OptionsMenuScene(GraphicsDevice graphicsDevice)
     {
-        SceneType = SceneType.OptionsMenu;
+        SceneType = SceneTypeEnum.OptionsMenu;
         _graphicsDevice = graphicsDevice;
     }
 

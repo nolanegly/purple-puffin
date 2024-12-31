@@ -1,6 +1,6 @@
 ﻿namespace PurplePuffin.SceneManagement;
 
-public enum SceneType // TODO: append `Enum` to the name
+public enum SceneTypeEnum
 {
     Uninitialized,
     Title,
