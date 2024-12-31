@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +15,9 @@ public class GameScene : Scene
     private readonly List<Event> _eventsToReturn = new();
     
     private SharedContent _sharedContent;
-    private Vector2 _gameplayPos;
+    private Vector2 _centerScene;
+    private float _messageOffset = 0.0f;
+    private int _messageDirection = 1;
 
     public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
@@ -29,15 +32,25 @@ public class GameScene : Scene
         _sharedContent = sharedContent;
         
         var viewport = _graphicsDevice.Viewport;
-        _gameplayPos = new Vector2(viewport.Width / 2, viewport.Height / 2);        
+        _centerScene = new Vector2(viewport.Width / 2, viewport.Height / 2);        
     }
     
     public override Event[] Update(GameTime gameTime)
     {
+        // handle player input
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
                                                               Keyboard.GetState().IsKeyDown(Keys.Escape))
             _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
-
+        
+        // animate the message
+        if (_messageOffset >= 1.0f)
+            _messageDirection = -1;
+        else if (_messageOffset <= -1.0f)
+            _messageDirection = 1;
+        
+        _messageOffset += (0.01f * _messageDirection);
+        
+        // return any events
         var result = _eventsToReturn.ToArray();
         _eventsToReturn.Clear();
         return result;
@@ -47,7 +60,9 @@ public class GameScene : Scene
     {
         var message = "Game scene";
         var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
-        _spriteBatch.DrawString(_sharedContent.ArialFont, message, _gameplayPos, Color.LightGreen,
+        var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
+        
+        _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, Color.LightGreen,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
     }
 }
