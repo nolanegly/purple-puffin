@@ -7,6 +7,8 @@ stateDiagram-v2
     Title--> MainMenu
     MainMenu--> OptionMenu
     OptionMenu --> MainMenu
-    MainMenu --> gameplay
+    MainMenu --> GamePlay
     MainMenu --> [*]
-    gameplay --> [*]
+    GamePlay --> [*]
+    GamePlay --> GamePaused
+    GamePaused --> GamePlay

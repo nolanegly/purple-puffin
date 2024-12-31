@@ -22,6 +22,7 @@ public class PurplePuffinGame : Game
     private MainMenuScene _mainMenuScene;
     private OptionsMenuScene _optionsMenuScene;
     private GameScene _gameScene;
+    private GamePausedScene _gamePausedScene;
     
     // TODO: this list could pretty much be a stack (or the scenes need a z-index).
     // When rendering multiple overlapping display areas, we have to know an ordering
@@ -58,6 +59,8 @@ public class PurplePuffinGame : Game
         _scenes.Add(_optionsMenuScene);
         _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
         _scenes.Add(_gameScene);
+        _gamePausedScene = new GamePausedScene(GraphicsDevice, _spriteBatch);
+        _scenes.Add(_gamePausedScene);
         
         _sceneState = new SceneState
         {
@@ -77,6 +80,7 @@ public class PurplePuffinGame : Game
         _mainMenuScene.LoadContent();
         _optionsMenuScene.LoadContent();
         _gameScene.LoadContent(_sharedContent);
+        _gamePausedScene.LoadContent(_sharedContent);
         
         
         // Naive "how do I make this work" code for music
@@ -131,6 +135,20 @@ public class PurplePuffinGame : Game
                 _sceneState.CurrState = SceneStateEnum.OptionMenu;
                 _sceneState.HasInputFocus = SceneTypeEnum.OptionsMenu;
                 _sceneState.ActiveScenes = [SceneTypeEnum.OptionsMenu];
+            }
+            
+            if (e.EventType == EventType.PauseGameRequested)
+            {
+                _sceneState.CurrState = SceneStateEnum.GamePaused;
+                _sceneState.HasInputFocus = SceneTypeEnum.GamePaused;
+                _sceneState.ActiveScenes = [SceneTypeEnum.GamePaused];
+            }
+            
+            if (e.EventType == EventType.UnpauseGameRequested)
+            {
+                _sceneState.CurrState = SceneStateEnum.Game;
+                _sceneState.HasInputFocus = SceneTypeEnum.Game;
+                _sceneState.ActiveScenes = [SceneTypeEnum.Game];
             }
         }
         

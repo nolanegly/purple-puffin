@@ -20,5 +20,6 @@ public enum SceneStateEnum
     Title,
     MainMenu,
     OptionMenu,
-    Game
+    Game,
+    GamePaused,
 }

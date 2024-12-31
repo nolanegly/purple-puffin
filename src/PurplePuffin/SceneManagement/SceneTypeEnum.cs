@@ -6,5 +6,6 @@ public enum SceneTypeEnum
     Title,
     MainMenu,
     OptionsMenu,
-    Game
+    Game,
+    GamePaused
 }

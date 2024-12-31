@@ -8,20 +8,20 @@ using PurplePuffin.SceneManagement;
 
 namespace PurplePuffin;
 
-public class GameScene : Scene
+public class GamePausedScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
     private readonly List<Event> _eventsToReturn = new();
     
     private SharedContent _sharedContent;
-    private Vector2 _centerScene;
+    private Vector2 _centerTopScene;
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
 
-    public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public GamePausedScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
-        SceneType = SceneTypeEnum.Game;
+        SceneType = SceneTypeEnum.GamePaused;
         
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
@@ -32,19 +32,15 @@ public class GameScene : Scene
         _sharedContent = sharedContent;
         
         var viewport = _graphicsDevice.Viewport;
-        _centerScene = new Vector2(viewport.Width / 2, viewport.Height / 2);        
+        _centerTopScene = new Vector2(viewport.Width / 2, viewport.Height / 4);        
     }
     
     public override Event[] Update(GameTime gameTime)
     {
         // handle player input
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
-                                                              Keyboard.GetState().IsKeyDown(Keys.Escape))
-            _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
-        // Don't return any other simultaneous requests if a quit was requested
-        else if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || 
-                 Keyboard.GetState().IsKeyDown(Keys.Space))
-            _eventsToReturn.Add(new Event(EventType.PauseGameRequested));
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || 
+                                                              Keyboard.GetState().IsKeyDown(Keys.Space))
+            _eventsToReturn.Add(new Event(EventType.UnpauseGameRequested));
         
         // animate the message
         if (_messageOffset >= 1.0f)
@@ -62,9 +58,9 @@ public class GameScene : Scene
 
     public override void Draw(GameTime gameTime)
     {
-        var message = "Game scene";
+        var message = "-=[ PAUSE ]=-";
         var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
-        var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
+        var messagePos = new Vector2(_centerTopScene.X + (_centerTopScene.X * _messageOffset), _centerTopScene.Y);
         
         _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, Color.LightGreen,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
