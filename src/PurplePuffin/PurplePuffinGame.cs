@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Media;
 using Myra;
@@ -14,12 +16,13 @@ public class PurplePuffinGame : Game
 
     private SharedContent _sharedContent;
     
-    private Scene _activeScene;
+    private SceneState _sceneState;
     
     private TitleScene _titleScene;
     private MainMenuScene _mainMenuScene;
     private OptionsMenuScene _optionsMenuScene;
     private GameScene _gameScene;
+    private readonly List<Scene> _scenes = new(4);
 
     private Song _backgroundSong;
 
@@ -44,19 +47,28 @@ public class PurplePuffinGame : Game
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
         _titleScene = new TitleScene(GraphicsDevice, _spriteBatch);
+        _scenes.Add(_titleScene);
         _mainMenuScene = new MainMenuScene(GraphicsDevice, _spriteBatch);
+        _scenes.Add(_mainMenuScene);
         _optionsMenuScene = new OptionsMenuScene(GraphicsDevice);
+        _scenes.Add(_optionsMenuScene);
         _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
+        _scenes.Add(_gameScene);
         
-        _activeScene = _titleScene;
-        
+        _sceneState = new SceneState
+        {
+            CurrState = SceneStateEnum.Title,
+            HasInputFocus = SceneTypeEnum.Title,
+            ActiveScenes = [SceneTypeEnum.Title]
+        };
+
         base.Initialize();
     }
 
     protected override void LoadContent()
     {
         _sharedContent.ArialFont = Content.Load<SpriteFont>("arial");
-        
+
         _titleScene.LoadContent(_sharedContent);
         _mainMenuScene.LoadContent();
         _optionsMenuScene.LoadContent();
@@ -76,7 +88,8 @@ public class PurplePuffinGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        var events = _activeScene.Update(gameTime);
+        var focusedScene = _scenes.Single(s => s.SceneType == _sceneState.HasInputFocus);
+        var events = focusedScene.Update(gameTime);
 
         foreach (var e in events)
         {
@@ -94,13 +107,25 @@ public class PurplePuffinGame : Game
             // 2) when changing scenes, need to call Update() on the newly active scene (which means two scenes will
             //    have been updated, potentially throwing the average elapsed time...dunno if that matters?)
             if (e.EventType == EventType.StartNewGameRequested)
-                _activeScene = _gameScene;
-
+            {
+                _sceneState.CurrState = SceneStateEnum.Game;
+                _sceneState.HasInputFocus = SceneTypeEnum.Game;
+                _sceneState.ActiveScenes = [SceneTypeEnum.Game];
+            }
+            
             if (e.EventType == EventType.MainMenuRequested)
-                _activeScene = _mainMenuScene;
+            {
+                _sceneState.CurrState = SceneStateEnum.MainMenu;
+                _sceneState.HasInputFocus = SceneTypeEnum.MainMenu;
+                _sceneState.ActiveScenes = [SceneTypeEnum.MainMenu];
+            }
             
             if (e.EventType == EventType.OptionsMenuRequested)
-                _activeScene = _optionsMenuScene;
+            {
+                _sceneState.CurrState = SceneStateEnum.OptionMenu;
+                _sceneState.HasInputFocus = SceneTypeEnum.OptionsMenu;
+                _sceneState.ActiveScenes = [SceneTypeEnum.OptionsMenu];
+            }
         }
         
         base.Update(gameTime);
@@ -111,10 +136,15 @@ public class PurplePuffinGame : Game
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
         _spriteBatch.Begin();
-        _activeScene.Draw(gameTime);
+
+        foreach (var activeSceneType in _sceneState.ActiveScenes)
+        {
+            var activeScene = _scenes.Single(s => s.SceneType == activeSceneType);
+            activeScene.Draw(gameTime);
+        }
+        
         _spriteBatch.End();
 
         base.Draw(gameTime);
     }
 }
-
