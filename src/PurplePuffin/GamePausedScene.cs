@@ -18,6 +18,8 @@ public class GamePausedScene : Scene
     private Vector2 _centerTopScene;
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
+    
+    public bool _unpauseGameHandled = false;
 
     public GamePausedScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
@@ -38,9 +40,19 @@ public class GamePausedScene : Scene
     public override Event[] Update(GameTime gameTime)
     {
         // handle player input
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || 
-                                                              Keyboard.GetState().IsKeyDown(Keys.Space))
+        if (!_unpauseGameHandled && (
+                     Keyboard.GetState().IsKeyDown(Keys.Space))
+                )
+        {
             _eventsToReturn.Add(new Event(EventType.UnpauseGameRequested));
+            _unpauseGameHandled = true;
+        }
+        else if (_unpauseGameHandled && (
+                     Keyboard.GetState().IsKeyUp(Keys.Space))
+                )
+        {
+            _unpauseGameHandled = false;
+        }
         
         // animate the message
         if (_messageOffset >= 1.0f)

@@ -139,6 +139,13 @@ public class PurplePuffinGame : Game
             
             if (e.EventType == EventType.PauseGameRequested)
             {
+                // Tell the game paused scene it has already handled the spacebar being pressed, because coming into
+                // the pause screen the player is still holding down the space bar as the transition is executed and
+                // not setting this to true causes the pause scene to immediately fire an unpause request.
+                // This isn't a great technique, but it works for now and we'll add a better way to handle the beginning
+                // of transitions shortly.
+                _gamePausedScene._unpauseGameHandled = true;
+                
                 _sceneState.CurrState = SceneStateEnum.GamePaused;
                 _sceneState.HasInputFocus = SceneTypeEnum.GamePaused;
                 _sceneState.ActiveScenes = [SceneTypeEnum.GamePaused];
@@ -146,6 +153,8 @@ public class PurplePuffinGame : Game
             
             if (e.EventType == EventType.UnpauseGameRequested)
             {
+                _gameScene._pauseGameHandled = true;
+                
                 _sceneState.CurrState = SceneStateEnum.Game;
                 _sceneState.HasInputFocus = SceneTypeEnum.Game;
                 _sceneState.ActiveScenes = [SceneTypeEnum.Game];

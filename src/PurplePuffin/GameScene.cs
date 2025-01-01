@@ -19,6 +19,8 @@ public class GameScene : Scene
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
 
+    public bool _pauseGameHandled = false;
+
     public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.Game;
@@ -42,9 +44,19 @@ public class GameScene : Scene
                                                               Keyboard.GetState().IsKeyDown(Keys.Escape))
             _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
         // Don't return any other simultaneous requests if a quit was requested
-        else if (GamePad.GetState(PlayerIndex.One).Buttons.Start == ButtonState.Pressed || 
-                 Keyboard.GetState().IsKeyDown(Keys.Space))
+        else if (!_pauseGameHandled && (
+                     Keyboard.GetState().IsKeyDown(Keys.Space))
+                )
+        {
             _eventsToReturn.Add(new Event(EventType.PauseGameRequested));
+            _pauseGameHandled = true;
+        }
+        else if (_pauseGameHandled && (
+                     Keyboard.GetState().IsKeyUp(Keys.Space))
+                )
+        {
+            _pauseGameHandled = false;
+        }
         
         // animate the message
         if (_messageOffset >= 1.0f)
