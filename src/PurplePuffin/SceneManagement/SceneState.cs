@@ -6,6 +6,5 @@
 public class SceneState
 {
     public SceneStateEnum CurrState;
-    public SceneTypeEnum HasInputFocus;
     public SceneTypeEnum[] ActiveScenes;
 }
