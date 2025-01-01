@@ -3,6 +3,7 @@
 public enum EventType
 {
     Uninitialized,
+    TransitionRequested,
     MainMenuRequested,
     StartNewGameRequested,
     PauseGameRequested,

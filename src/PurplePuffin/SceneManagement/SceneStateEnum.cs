@@ -17,6 +17,8 @@
 /// </remarks>
 public enum SceneStateEnum
 {
+    Uninitialized,
+    Transitioning,
     Title,
     MainMenu,
     OptionMenu,

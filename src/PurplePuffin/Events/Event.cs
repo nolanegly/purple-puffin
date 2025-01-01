@@ -2,9 +2,9 @@ using System;
 
 namespace PurplePuffin.Events;
 
-public class Event
+public class Event : EventBase
 {
-    public EventType EventType { get; }
+    public override EventType EventType { get; }
 
     public Event(EventType eventType)
     {

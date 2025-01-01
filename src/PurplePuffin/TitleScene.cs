@@ -33,7 +33,7 @@ public class TitleScene : Scene
         _titlePos = new Vector2(viewport.Width / 2, viewport.Height / 2);
     }
     
-    public override Event[] Update(GameTime gameTime)
+    public override EventBase[] Update(GameTime gameTime)
     {
         WaitTwoSecondsAndThenAdvanceToMainMenu(gameTime);
         

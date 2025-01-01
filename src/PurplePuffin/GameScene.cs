@@ -12,14 +12,16 @@ public class GameScene : Scene
 {
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-    private readonly List<Event> _eventsToReturn = new();
+    private readonly List<EventBase> _eventsToReturn = new();
     
     private SharedContent _sharedContent;
     private Vector2 _centerScene;
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
+    private float _messageAlpha = 1.0f;
 
-    public bool _pauseGameHandled = false;
+    private bool _pauseGameHandled = false;
+    private TransitionStateEnum _transitionState = TransitionStateEnum.None;
 
     public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
@@ -37,7 +39,7 @@ public class GameScene : Scene
         _centerScene = new Vector2(viewport.Width / 2, viewport.Height / 2);        
     }
     
-    public override Event[] Update(GameTime gameTime)
+    public override EventBase[] Update(GameTime gameTime)
     {
         // handle player input
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
@@ -48,7 +50,13 @@ public class GameScene : Scene
                      Keyboard.GetState().IsKeyDown(Keys.Space))
                 )
         {
-            _eventsToReturn.Add(new Event(EventType.PauseGameRequested));
+            _eventsToReturn.Add(new TransitionEvent(new SceneTransition
+            {
+                OldState = SceneStateEnum.Game,
+                NewState = SceneStateEnum.GamePaused,
+                DegreeStepAmount = 0.1f
+            }));
+            
             _pauseGameHandled = true;
         }
         else if (_pauseGameHandled && (
@@ -71,14 +79,56 @@ public class GameScene : Scene
         _eventsToReturn.Clear();
         return result;
     }
+    
+    
 
     public override void Draw(GameTime gameTime)
     {
         var message = "Game scene";
         var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
         var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
-        
-        _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, Color.LightGreen,
+        var color = Color.LightGreen * _messageAlpha;
+        _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, color,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
+    }
+    
+    public override void BeginTransition(SceneTransition sceneTransition, GameTime gameTime)
+    {
+        if (sceneTransition.OldState == SceneStateEnum.Game &&
+            sceneTransition.NewState == SceneStateEnum.GamePaused)
+        {
+            _transitionState = TransitionStateEnum.Out;
+        }
+        else if (sceneTransition.OldState == SceneStateEnum.GamePaused &&
+                 sceneTransition.NewState == SceneStateEnum.Game)
+        {
+            _pauseGameHandled = true;
+            _transitionState = TransitionStateEnum.In;
+        }
+    }
+
+    public override void StepTransition(float currDegree, GameTime gameTime)
+    {
+        switch (_transitionState)
+        {
+            case TransitionStateEnum.None:
+                return;
+            case TransitionStateEnum.In:
+                _messageAlpha = currDegree;
+                break;
+            case TransitionStateEnum.Out:
+                _messageAlpha = 1.0f - currDegree;
+                break;
+        }
+    }
+
+    public override void EndTransition(GameTime gameTime)
+    {
+        if (_transitionState == TransitionStateEnum.None) return;
+
+        _messageAlpha = _transitionState == TransitionStateEnum.In
+            ? 1.0f
+            : 0.0f;
+        _transitionState = TransitionStateEnum.None;
     }
 }

@@ -43,7 +43,7 @@ public class MainMenuScene : Scene
         _desktop.Root = ui;
     }
     
-    public override Event[] Update(GameTime gameTime)
+    public override EventBase[] Update(GameTime gameTime)
     {
         if (_transitionDegree > 0.0f)
             _transitionDegree += 0.07f;

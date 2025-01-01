@@ -5,7 +5,9 @@
 - [X] Add an options screen with a music volume control
   - will acquaint me with UI control library
 - [X] Add a fade out transition effect between two scenes
-- [ ] Add general scene transition support
+- [X] Add general scene transition support
+- [ ] Add support for detecting/querying input state changes to replace the ad-hoc detection in the Game and GamePaused scenes
+  - [ ] Finish converting scene state changes to transitions should be easier once input detection is better
 - [ ] Add a credits screen that cites music source
   - Juhani Junkala, https://juhanijunkala.com/
   - music tracks have been released under CC0 creative commons license

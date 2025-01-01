@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -24,9 +25,6 @@ public class PurplePuffinGame : Game
     private GameScene _gameScene;
     private GamePausedScene _gamePausedScene;
     
-    // TODO: this list could pretty much be a stack (or the scenes need a z-index).
-    // When rendering multiple overlapping display areas, we have to know an ordering
-    // to draw foreground/background correctly between the overlapping images.
     private readonly List<Scene> _scenes = new(4);
 
     private Song _backgroundSong;
@@ -93,11 +91,7 @@ public class PurplePuffinGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        var focusedScenes = _scenes
-            .Where(s => _sceneState.ActiveScenes.Contains(s.SceneType))
-            .ToArray();
-
-        var events = new Dictionary<SceneTypeEnum, Event[]>();
+        var events = new Dictionary<SceneTypeEnum, EventBase[]>();
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
         {
@@ -105,25 +99,109 @@ public class PurplePuffinGame : Game
             events.Add(activeScene.SceneType, activeScene.Update(gameTime));
         }
         
-        var allEvents = events.SelectMany(pair => 
+        var sceneAndEvents = events.SelectMany(pair => 
             pair.Value.Select(@event => new { pair.Key, @event }))
-            .ToArray();
+            .ToList();
+
+        // Handle transition event first (choose one if there are multiples for some reason)
+        var sceneTransitionEvent = sceneAndEvents.FirstOrDefault(e => e.@event is TransitionEvent);
+        var sceneTransition = (sceneTransitionEvent?.@event as TransitionEvent)?.SceneTransition;
         
-        foreach (var sceneEvent in allEvents)
+        // Three possible transition states
+        // 1. We are not currently in a transition and need to Begin() one
+        // 2. OR We are currently in a transition and need to Step() or End() it
+        //    2a. If a second transition was requested before first one is finished, log warning that it's being ignored 
+        // 3. OR We are not currently in a transition
+        
+        // Handle 1. We are not currently in a transition and need to Begin() one
+        if (sceneTransition != null && _sceneState.CurrState != SceneStateEnum.Transitioning)
         {
+            // Set state to Transitioning
+            _sceneState.CurrState = SceneStateEnum.Transitioning;
+            _sceneState.Transition = sceneTransition;
+            _sceneState.TransitionDegree = 0.0f;
+            
+            // Add any scenes in new state that are not already active 
+            var scenesToAdd = SceneStateDefinition.For(_sceneState.Transition.NewState).ActiveScenes
+                .Where(s => !_sceneState.ActiveScenes.Contains(s))
+                .ToArray();
+            _sceneState.ActiveScenes = _sceneState.ActiveScenes.Union(scenesToAdd).ToArray();
+            
+            // All active scenes should set any internal state necessary for imminent StepTransition() or EndTransition() calls
+            foreach (var activeSceneType in _sceneState.ActiveScenes)
+            {
+                var activeScene = _scenes.Single(s => s.SceneType == activeSceneType);
+                activeScene.BeginTransition(_sceneState.Transition, gameTime);
+            }
+            
+            // Call Update() on any newly added scenes
+            var newlyAddedScenes = _scenes.Where(s => scenesToAdd.Contains(s.SceneType)).ToArray();
+            foreach (var newlyAddedScene in newlyAddedScenes)
+            {
+                events.Add(newlyAddedScene.SceneType, newlyAddedScene.Update(gameTime));
+            }
+            
+            // Don't handle the transition event again in the non-transition event processing 
+            sceneAndEvents.Remove(sceneTransitionEvent);
+        }
+        // Handle 2. We are currently in a transition and need to Step() or End() it
+        else if (_sceneState.CurrState == SceneStateEnum.Transitioning)
+        {
+            // Handle 2a. If a second transition was requested before first one is finished, log warning that it's being ignored
+            //
+            // In the future, support for canceling the transition in progress could be added for certain transitions.
+            // E.g. Legend of Zelda LTTP where inventory menu slides down from top, but can be cancelled and sent
+            // back upwards before it comes down fully. Alternatively, the transition could be done instantaneous
+            // and the inventory screen could do its slide-in animation before accepting player input except
+            // a command to close the inventory screen (starting a slide-out animation before triggering an
+            // instant transition to game screen).
+            if (sceneTransition != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"WARN: ignoring transition request while already transitioning. {sceneTransitionEvent.Key} requested transition: {sceneTransition}");
+                
+                // Don't handle the transition event again in the non-transition event processing 
+                sceneAndEvents.Remove(sceneTransitionEvent);
+            }
+
+            _sceneState.TransitionDegree += _sceneState.Transition.DegreeStepAmount;
+            if (_sceneState.TransitionDegree < 1.0f)
+            {
+                foreach (var activeSceneType in _sceneState.ActiveScenes)
+                {
+                    var activeScene = _scenes.Single(s => s.SceneType == activeSceneType);
+                    activeScene.StepTransition(_sceneState.TransitionDegree, gameTime);
+                }
+            }
+            else
+            {
+                foreach (var activeSceneType in _sceneState.ActiveScenes)
+                {
+                    var activeScene = _scenes.Single(s => s.SceneType == activeSceneType);
+                    activeScene.EndTransition(gameTime);
+                }
+                
+                // end the transition
+                _sceneState.CurrState = _sceneState.Transition.NewState;
+                _sceneState.Transition = null;
+                _sceneState.TransitionDegree = 0.0f;
+                
+                // remove any scenes that are not present in the current state
+                _sceneState.ActiveScenes = SceneStateDefinition.For(_sceneState.CurrState).ActiveScenes;
+            }
+        }
+        
+        // After processing transition event, handle any other non-transition events
+        foreach (var sceneEvent in sceneAndEvents)
+        {
+            if (sceneEvent.@event.EventType == EventType.TransitionRequested)
+            {
+                System.Diagnostics.Debug.WriteLine($"WARN: ignoring extra transition requests in same Update() frame. {sceneTransitionEvent.Key} requested transition: {sceneTransition}, but {sceneTransitionEvent.Key} already started: {sceneTransition}");
+            }
+            
             if (sceneEvent.@event.EventType == EventType.QuitGameRequested)
                 Exit();
 
-            // TODO: this works but has a hidden issue (the transition from the title scene has the same problem)
-            // This straightforward change of active scene causes a processing mismatch between the framework
-            // calling this Update() and Draw() method. Scene A is active on Update(), the logic changes the
-            // active scene to Scene B, and then Scene B is active on Draw(). But Scene B did not handle the 
-            // Update() for this update/draw cycle.
-            // Instead of switching the active scene directly, either:
-            // 1) a scene transition needs to be queued and handled at the top of the next Update(), so the subsequent
-            //    Draw() is called on the same scene that Update() was
-            // 2) when changing scenes, need to call Update() on the newly active scene (which means two scenes will
-            //    have been updated, potentially throwing the average elapsed time...dunno if that matters?)
+            // TODO: convert these state changes to use TransitionEvent instead
             if (sceneEvent.@event.EventType == EventType.StartNewGameRequested)
                 _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
             
@@ -132,61 +210,7 @@ public class PurplePuffinGame : Game
             
             if (sceneEvent.@event.EventType == EventType.OptionsMenuRequested)
                 _sceneState = SceneState.FromDefinition(SceneStateDefinition.OptionsMenu);
-            
-            if (sceneEvent.@event.EventType == EventType.PauseGameRequested)
-            {
-                // Tell the game paused scene it has already handled the spacebar being pressed, because coming into
-                // the pause screen the player is still holding down the space bar as the transition is executed and
-                // not setting this to true causes the pause scene to immediately fire an unpause request.
-                // This isn't a great technique, but it works for now and we'll add a better way to handle the beginning
-                // of transitions shortly.
-                _gamePausedScene._unpauseGameHandled = true;
-                
-                _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePaused);
-            }
-            
-            if (sceneEvent.@event.EventType == EventType.UnpauseGameRequested)
-            {
-                _gameScene._pauseGameHandled = true;
-                
-                _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
-            }
         }
-        
-        // var updatedScenes = _sceneState.ActiveScenes.ToArray();
-        // call Update() on updatedScenes so it can get  user input
-        // if transition requested and _sceneState.CurrState is NOT Transitioning
-        //      - set _sceneState.CurrState to Transitioning
-        //      - set _sceneState.Transition from null to Transition instance
-        //      - add NewState scenes to _sceneState.ActiveScenes (reference SceneStateDefinitions resource)
-        //      - call BeginTransition() on all _sceneState.ActiveScenes
-        //      - invoked scenes should set any internal state necessary for imminent StepTransition() or EndTransition() calls
-        //      - call Update() on any other _sceneState.ActiveScenes that are not in updatedScenes
-        //      - end branch
-        // else if transition requested and _sceneState.CurrState IS Transitioning
-        //      - log warning that the new transition request is being ignored
-        //      // In the future, support for canceling the transition in progress could be added for certain transitions.
-        //      // E.g. Legend of Zelda LTTP where inventory menu slides down from top, but can be cancelled and sent
-        //      // back upwards before it comes down fully. Alternatively, the transition could be done instantaneous
-        //      // and the inventory screen could do its slide-in animation before accepting player input except
-        //      // a command to close the inventory screen (starting a slide-out animation before triggering an
-        //      // instant transition to game screen).
-        //      - end branch
-        // else if no transition requested but _sceneState.CurrState is Transitioning
-        //      - step the transition degree
-        //      - if degree still < 1.0f
-        //          - call StepTransition() on _sceneState.ActiveScenes
-        //          - end branch
-        //      - else if degree >= 1.0f
-        //          - call EndTransition() on all _sceneState.ActiveScenes
-        //          - invoked scenes should clean up any internal state from the transition
-        //          - OldState scenes not also in NewState should expect they will not get any
-        //            further Update() or Draw() calls
-        //          - set _sceneState.CurrState to Transition.NewState
-        //          - remove Transition.OldState scenes not also in NewState from _sceneState.ActiveScenes
-        //            (reference SceneStateDefinitions resource)
-        //          - set _sceneState.Transition to null
-        // end else
         
         base.Update(gameTime);
     }

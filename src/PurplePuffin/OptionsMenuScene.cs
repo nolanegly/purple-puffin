@@ -47,7 +47,7 @@ public class OptionsMenuScene : Scene
         _eventsToReturn.Add(new Event(EventType.MainMenuRequested));
     }
 
-    public override Event[] Update(GameTime gameTime)
+    public override EventBase[] Update(GameTime gameTime)
     {
         var result = _eventsToReturn.ToArray();
         _eventsToReturn.Clear();
