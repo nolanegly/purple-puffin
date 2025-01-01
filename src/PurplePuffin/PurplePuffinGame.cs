@@ -61,12 +61,8 @@ public class PurplePuffinGame : Game
         _scenes.Add(_gameScene);
         _gamePausedScene = new GamePausedScene(GraphicsDevice, _spriteBatch);
         _scenes.Add(_gamePausedScene);
-        
-        _sceneState = new SceneState
-        {
-            CurrState = SceneStateEnum.Title,
-            ActiveScenes = [SceneTypeEnum.Title]
-        };
+
+        _sceneState = SceneState.FromDefinition(SceneStateDefinition.Title);
 
         base.Initialize();
     }
@@ -129,22 +125,13 @@ public class PurplePuffinGame : Game
             // 2) when changing scenes, need to call Update() on the newly active scene (which means two scenes will
             //    have been updated, potentially throwing the average elapsed time...dunno if that matters?)
             if (sceneEvent.@event.EventType == EventType.StartNewGameRequested)
-            {
-                _sceneState.CurrState = SceneStateEnum.Game;
-                _sceneState.ActiveScenes = [SceneTypeEnum.Game];
-            }
+                _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
             
             if (sceneEvent.@event.EventType == EventType.MainMenuRequested)
-            {
-                _sceneState.CurrState = SceneStateEnum.MainMenu;
-                _sceneState.ActiveScenes = [SceneTypeEnum.MainMenu];
-            }
+                _sceneState = SceneState.FromDefinition(SceneStateDefinition.MainMenu);
             
             if (sceneEvent.@event.EventType == EventType.OptionsMenuRequested)
-            {
-                _sceneState.CurrState = SceneStateEnum.OptionMenu;
-                _sceneState.ActiveScenes = [SceneTypeEnum.OptionsMenu];
-            }
+                _sceneState = SceneState.FromDefinition(SceneStateDefinition.OptionsMenu);
             
             if (sceneEvent.@event.EventType == EventType.PauseGameRequested)
             {
@@ -155,16 +142,14 @@ public class PurplePuffinGame : Game
                 // of transitions shortly.
                 _gamePausedScene._unpauseGameHandled = true;
                 
-                _sceneState.CurrState = SceneStateEnum.GamePaused;
-                _sceneState.ActiveScenes = [SceneTypeEnum.GamePaused];
+                _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePaused);
             }
             
             if (sceneEvent.@event.EventType == EventType.UnpauseGameRequested)
             {
                 _gameScene._pauseGameHandled = true;
                 
-                _sceneState.CurrState = SceneStateEnum.Game;
-                _sceneState.ActiveScenes = [SceneTypeEnum.Game];
+                _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
             }
         }
         
@@ -173,7 +158,7 @@ public class PurplePuffinGame : Game
         // if transition requested and _sceneState.CurrState is NOT Transitioning
         //      - set _sceneState.CurrState to Transitioning
         //      - set _sceneState.Transition from null to Transition instance
-        //      - add NewState scenes to _sceneState.ActiveScenes (reference new SceneStateDefinitions resource)
+        //      - add NewState scenes to _sceneState.ActiveScenes (reference SceneStateDefinitions resource)
         //      - call BeginTransition() on all _sceneState.ActiveScenes
         //      - invoked scenes should set any internal state necessary for imminent StepTransition() or EndTransition() calls
         //      - call Update() on any other _sceneState.ActiveScenes that are not in updatedScenes
@@ -199,7 +184,7 @@ public class PurplePuffinGame : Game
         //            further Update() or Draw() calls
         //          - set _sceneState.CurrState to Transition.NewState
         //          - remove Transition.OldState scenes not also in NewState from _sceneState.ActiveScenes
-        //            (reference new SceneStateDefinitions resource)
+        //            (reference SceneStateDefinitions resource)
         //          - set _sceneState.Transition to null
         // end else
         
