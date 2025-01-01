@@ -5,7 +5,7 @@ Polished refers to the level of feature completeness, such as having background 
 
 Polished does NOT refer to the level of sophistication in game mechanics, degree of detail in graphics and music, etc.
 
-For simplicity I am solely targeting desktop environments; web, mobile, and console versions are a  non-goal.
+For simplicity I am solely targeting desktop environments; web, mobile, and console versions are a non-goal.
 
 # Architecture Decision Records
 
