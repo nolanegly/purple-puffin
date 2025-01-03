@@ -9,6 +9,7 @@ namespace PurplePuffin;
 
 public class TitleScene : Scene
 {
+    private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
     private readonly List<Event> _eventsToReturn = new();
@@ -17,10 +18,11 @@ public class TitleScene : Scene
     private Vector2 _titlePos;
     private TimeSpan? _timeSinceFirstUpdate;
 
-    public TitleScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public TitleScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.Title;
-        
+
+        _inputState = inputState;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
     }

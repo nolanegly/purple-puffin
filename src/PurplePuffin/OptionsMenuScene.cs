@@ -12,13 +12,16 @@ namespace PurplePuffin;
 
 public class OptionsMenuScene : Scene
 {
+    private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly Desktop _desktop = new();
     private readonly List<Event> _eventsToReturn = new();
 
-    public OptionsMenuScene(GraphicsDevice graphicsDevice)
+    public OptionsMenuScene(InputState inputState, GraphicsDevice graphicsDevice)
     {
         SceneType = SceneTypeEnum.OptionsMenu;
+        
+        _inputState = inputState;
         _graphicsDevice = graphicsDevice;
     }
 

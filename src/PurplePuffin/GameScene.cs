@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,6 +9,7 @@ namespace PurplePuffin;
 
 public class GameScene : Scene
 {
+    private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
@@ -20,13 +20,13 @@ public class GameScene : Scene
     private int _messageDirection = 1;
     private float _messageAlpha = 1.0f;
 
-    private bool _pauseGameHandled = false;
     private TransitionStateEnum _transitionState = TransitionStateEnum.None;
 
-    public GameScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public GameScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.Game;
-        
+
+        _inputState = inputState;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
     }
@@ -42,13 +42,10 @@ public class GameScene : Scene
     public override EventBase[] Update(GameTime gameTime)
     {
         // handle player input
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
-                                                              Keyboard.GetState().IsKeyDown(Keys.Escape))
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || _inputState.IsKeyTriggered(Keys.Escape))
             _eventsToReturn.Add(new Event(EventType.QuitGameRequested));
         // Don't return any other simultaneous requests if a quit was requested
-        else if (!_pauseGameHandled && (
-                     Keyboard.GetState().IsKeyDown(Keys.Space))
-                )
+        else if (_inputState.IsKeyTriggered(Keys.Space))
         {
             _eventsToReturn.Add(new TransitionEvent(new SceneTransition
             {
@@ -56,14 +53,6 @@ public class GameScene : Scene
                 NewState = SceneStateEnum.GamePaused,
                 DegreeStepAmount = 0.1f
             }));
-            
-            _pauseGameHandled = true;
-        }
-        else if (_pauseGameHandled && (
-                     Keyboard.GetState().IsKeyUp(Keys.Space))
-                )
-        {
-            _pauseGameHandled = false;
         }
         
         // animate the message
@@ -102,7 +91,6 @@ public class GameScene : Scene
         else if (sceneTransition.OldState == SceneStateEnum.GamePaused &&
                  sceneTransition.NewState == SceneStateEnum.Game)
         {
-            _pauseGameHandled = true;
             _transitionState = TransitionStateEnum.In;
         }
     }

@@ -13,6 +13,7 @@ namespace PurplePuffin;
 public class PurplePuffinGame : Game
 {
     private GraphicsDeviceManager _graphics;
+    private InputState _inputState;
     private SpriteBatch _spriteBatch;
 
     private SharedContent _sharedContent;
@@ -32,6 +33,7 @@ public class PurplePuffinGame : Game
     public PurplePuffinGame()
     {
         _graphics = new GraphicsDeviceManager(this);
+        _inputState = new InputState();
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
 
@@ -42,6 +44,10 @@ public class PurplePuffinGame : Game
     {
         // Initialize Myra (the UI library) 
         MyraEnvironment.Game = this;
+        
+        // Fetch the input state once before the main Update() loop starts to ensure
+        // both previous and current state are populated
+        _inputState.GetState();
 
         // Set initial starting volume to music player before loading Options screen,
         // so the UI controls will be set to a matching state
@@ -49,15 +55,15 @@ public class PurplePuffinGame : Game
         
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-        _titleScene = new TitleScene(GraphicsDevice, _spriteBatch);
+        _titleScene = new TitleScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_titleScene);
-        _mainMenuScene = new MainMenuScene(GraphicsDevice, _spriteBatch);
+        _mainMenuScene = new MainMenuScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_mainMenuScene);
-        _optionsMenuScene = new OptionsMenuScene(GraphicsDevice);
+        _optionsMenuScene = new OptionsMenuScene(_inputState, GraphicsDevice);
         _scenes.Add(_optionsMenuScene);
-        _gameScene = new GameScene(GraphicsDevice, _spriteBatch);
+        _gameScene = new GameScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_gameScene);
-        _gamePausedScene = new GamePausedScene(GraphicsDevice, _spriteBatch);
+        _gamePausedScene = new GamePausedScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_gamePausedScene);
 
         _sceneState = SceneState.FromDefinition(SceneStateDefinition.Title);
@@ -91,6 +97,8 @@ public class PurplePuffinGame : Game
 
     protected override void Update(GameTime gameTime)
     {
+        _inputState.GetState();
+        
         var events = new Dictionary<SceneTypeEnum, EventBase[]>();
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)

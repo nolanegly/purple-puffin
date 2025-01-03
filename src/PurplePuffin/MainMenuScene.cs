@@ -10,6 +10,7 @@ namespace PurplePuffin;
 
 public class MainMenuScene : Scene
 {
+    private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
     private readonly List<Event> _eventsToReturn = new();
@@ -19,10 +20,11 @@ public class MainMenuScene : Scene
     private float _transitionDegree = 0.0f;
     private readonly Texture2D _placeholderPixel;
     
-    public MainMenuScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public MainMenuScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.MainMenu;
 
+        _inputState = inputState;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
         

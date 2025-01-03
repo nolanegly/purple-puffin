@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -10,6 +9,7 @@ namespace PurplePuffin;
 
 public class GamePausedScene : Scene
 {
+    private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
@@ -20,14 +20,14 @@ public class GamePausedScene : Scene
     private int _messageDirection = 1;
     private float _messageAlpha = 1.0f;
 
-    private bool _unpauseGameHandled = false;
     private TransitionStateEnum _transitionState = TransitionStateEnum.None;
     
 
-    public GamePausedScene(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public GamePausedScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.GamePaused;
-        
+
+        _inputState = inputState;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
     }
@@ -43,9 +43,7 @@ public class GamePausedScene : Scene
     public override EventBase[] Update(GameTime gameTime)
     {
         // handle player input
-        if (!_unpauseGameHandled && (
-                     Keyboard.GetState().IsKeyDown(Keys.Space))
-                )
+        if (_inputState.IsKeyTriggered(Keys.Space))
         {
             _eventsToReturn.Add(new TransitionEvent(new SceneTransition
             {
@@ -53,16 +51,8 @@ public class GamePausedScene : Scene
                 NewState = SceneStateEnum.Game,
                 DegreeStepAmount = 0.1f
             }));
-            
-            _unpauseGameHandled = true;
         }
-        else if (_unpauseGameHandled && (
-                     Keyboard.GetState().IsKeyUp(Keys.Space))
-                )
-        {
-            _unpauseGameHandled = false;
-        }
-        
+
         // animate the message
         if (_messageOffset >= 1.0f)
             _messageDirection = -1;
@@ -97,13 +87,6 @@ public class GamePausedScene : Scene
         else if (sceneTransition.OldState == SceneStateEnum.Game &&
             sceneTransition.NewState == SceneStateEnum.GamePaused)
         {
-            // Tell the game paused scene it has already handled the spacebar being pressed, because coming into
-            // the pause screen the player is still holding down the space bar as the transition is executed and
-            // not setting this to true causes the pause scene to immediately fire an unpause request.
-            // This isn't a great technique, but it works for now and we'll add a better way to handle the beginning
-            // of transitions shortly.
-            _unpauseGameHandled = true;
-            
             _transitionState = TransitionStateEnum.In;
         }
     }
