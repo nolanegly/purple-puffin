@@ -17,9 +17,6 @@ public class MainMenuScene : Scene
 
     private readonly Desktop _desktop = new();
     
-    private float _transitionDegree = 0.0f;
-    private readonly Texture2D _placeholderPixel;
-    
     public MainMenuScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.MainMenu;
@@ -27,13 +24,12 @@ public class MainMenuScene : Scene
         _inputState = inputState;
         _graphicsDevice = graphicsDevice;
         _spriteBatch = spriteBatch;
-        
-        _placeholderPixel = new Texture2D(_graphicsDevice, 1, 1);
-        _placeholderPixel.SetData<Color>(new Color[] { Color.Black });    
     }
 
-    public void LoadContent()
+    public override void LoadContent(SharedContent sharedContent)
     {
+        base.LoadContent(sharedContent);
+        
         var ui = new MainMenuMyra();
         
         // UI control event handlers will be invoked by Myra during the Draw() invocation. Any game logic
@@ -47,15 +43,6 @@ public class MainMenuScene : Scene
     
     public override EventBase[] Update(GameTime gameTime)
     {
-        if (_transitionDegree > 0.0f)
-            _transitionDegree += 0.07f;
-
-        if (_transitionDegree >= 1.0f)
-        {
-            _transitionDegree = 0.0f;
-            _eventsToReturn.Add(new Event(EventType.OptionsMenuRequested));
-        }
-        
         var result = _eventsToReturn.ToArray();
         _eventsToReturn.Clear();
         return result;
@@ -63,17 +50,9 @@ public class MainMenuScene : Scene
 
     public override void Draw(GameTime gameTime)
     {
-        _graphicsDevice.Clear(Color.Black);
         _desktop.Render();
 
-        // If we're transitioning, draw the fade out
-        if (_transitionDegree > 0.0f)
-        {
-            _spriteBatch.Draw(_placeholderPixel, new Vector2(0, 0), null, 
-                new Color(0, 0, 0, _transitionDegree), 0f, Vector2.Zero, 
-                new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height),
-                SpriteEffects.None, 0);
-        }
+        DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);
     }
     
     private void MenuStartNewGameOnSelected(object sender, EventArgs e)
@@ -83,7 +62,7 @@ public class MainMenuScene : Scene
     
     private void MenuOptionsOnSelected(object sender, EventArgs e)
     {
-        _transitionDegree = 0.01f;
+        _eventsToReturn.Add(new Event(EventType.OptionsMenuRequested));
     }
     
     private void MenuQuitOnSelected(object sender, EventArgs e)

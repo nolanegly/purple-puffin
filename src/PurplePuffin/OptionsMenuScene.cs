@@ -25,8 +25,10 @@ public class OptionsMenuScene : Scene
         _graphicsDevice = graphicsDevice;
     }
 
-    public void LoadContent()
+    public override void LoadContent(SharedContent sharedContent)
     {
+        base.LoadContent(sharedContent);
+        
         var ui = new OptionsMenuMyra();
         
         ui._menuBackToMainMenu.Selected += MenuBackToMainMenuOnSelected;

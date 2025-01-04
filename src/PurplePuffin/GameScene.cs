@@ -14,7 +14,6 @@ public class GameScene : Scene
     private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
     
-    private SharedContent _sharedContent;
     private Vector2 _centerScene;
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
@@ -31,9 +30,9 @@ public class GameScene : Scene
         _spriteBatch = spriteBatch;
     }
 
-    public void LoadContent(SharedContent sharedContent)
+    public override void LoadContent(SharedContent sharedContent)
     {
-        _sharedContent = sharedContent;
+        base.LoadContent(sharedContent);
         
         var viewport = _graphicsDevice.Viewport;
         _centerScene = new Vector2(viewport.Width / 2, viewport.Height / 2);        
@@ -74,10 +73,10 @@ public class GameScene : Scene
     public override void Draw(GameTime gameTime)
     {
         var message = "Game scene";
-        var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
+        var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
         var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
         var color = Color.LightGreen * _messageAlpha;
-        _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, color,
+        _spriteBatch.DrawString(SharedContent.ArialFont, message, messagePos, color,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
     }
     

@@ -12,9 +12,8 @@ public class TitleScene : Scene
     private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-    private readonly List<Event> _eventsToReturn = new();
+    private readonly List<EventBase> _eventsToReturn = new();
 
-    private SharedContent _sharedContent;
     private Vector2 _titlePos;
     private TimeSpan? _timeSinceFirstUpdate;
 
@@ -27,9 +26,9 @@ public class TitleScene : Scene
         _spriteBatch = spriteBatch;
     }
 
-    public void LoadContent(SharedContent sharedContent)
+    public override void LoadContent(SharedContent sharedContent)
     {
-        _sharedContent = sharedContent;
+        base.LoadContent(sharedContent);
         
         var viewport = _graphicsDevice.Viewport;
         _titlePos = new Vector2(viewport.Width / 2, viewport.Height / 2);
@@ -47,9 +46,11 @@ public class TitleScene : Scene
     public override void Draw(GameTime gameTime)
     {
         var message = "Title scene";
-        var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
-        _spriteBatch.DrawString(_sharedContent.ArialFont, message, _titlePos, Color.LightGreen,
+        var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
+        _spriteBatch.DrawString(SharedContent.ArialFont, message, _titlePos, Color.LightGreen,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
+        
+        DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);
     }
     
     private void WaitTwoSecondsAndThenAdvanceToMainMenu(GameTime gameTime)
@@ -60,7 +61,12 @@ public class TitleScene : Scene
         }
         else if (gameTime.TotalGameTime > _timeSinceFirstUpdate.Value.Add(new TimeSpan(0, 0, 2)))
         {
-            _eventsToReturn.Add(new Event(EventType.MainMenuRequested));
+            _eventsToReturn.Add(new TransitionEvent(new SceneTransition
+            {
+                OldState = SceneStateEnum.Title,
+                NewState = SceneStateEnum.MainMenu,
+                DegreeStepAmount = 0.01f
+            }));
         }
     }
 }

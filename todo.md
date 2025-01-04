@@ -36,3 +36,5 @@
   - Font/text size
 - [ ] Automatically set the version on Main Menu from assembly's value
 - [ ] Play sound effects when clicking menu items
+- [ ] Modify transitions to use static image from previous scene, instead of simple fade out/fade in effect
+  - https://gamedev.stackexchange.com/questions/108518/monogame-screen-transition-with-fading

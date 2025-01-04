@@ -73,11 +73,14 @@ public class PurplePuffinGame : Game
 
     protected override void LoadContent()
     {
+        _sharedContent.PlaceholderPixel = new Texture2D(GraphicsDevice, 1, 1);
+        _sharedContent.PlaceholderPixel.SetData<Color>(new Color[] { Color.Black });
+        
         _sharedContent.ArialFont = Content.Load<SpriteFont>("arial");
 
         _titleScene.LoadContent(_sharedContent);
-        _mainMenuScene.LoadContent();
-        _optionsMenuScene.LoadContent();
+        _mainMenuScene.LoadContent(_sharedContent);
+        _optionsMenuScene.LoadContent(_sharedContent);
         _gameScene.LoadContent(_sharedContent);
         _gamePausedScene.LoadContent(_sharedContent);
         
@@ -165,7 +168,8 @@ public class PurplePuffinGame : Game
             // instant transition to game screen).
             if (sceneTransition != null)
             {
-                System.Diagnostics.Debug.WriteLine($"WARN: ignoring transition request while already transitioning. {sceneTransitionEvent.Key} requested transition: {sceneTransition}");
+                // TODO: figure out why this fires so much
+                //System.Diagnostics.Debug.WriteLine($"WARN: ignoring transition request while already transitioning. {sceneTransitionEvent.Key} requested transition: {sceneTransition}");
                 
                 // Don't handle the transition event again in the non-transition event processing 
                 sceneAndEvents.Remove(sceneTransitionEvent);
@@ -232,6 +236,7 @@ public class PurplePuffinGame : Game
         foreach (var activeSceneType in _sceneState.ActiveScenes)
         {
             var activeScene = _scenes.Single(s => s.SceneType == activeSceneType);
+            if (activeScene.ShouldBeDrawn == false) continue;
             activeScene.Draw(gameTime);
         }
         
