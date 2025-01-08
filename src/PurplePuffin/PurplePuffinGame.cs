@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Myra;
 using PurplePuffin.Events;
@@ -14,6 +15,8 @@ public class PurplePuffinGame : Game
 {
     private GraphicsDeviceManager _graphics;
     private InputState _inputState;
+    private TimeSpan _inputStateLastDump = TimeSpan.Zero;
+    private TimeSpan _inputStateDumpFrequency = new TimeSpan(0, 0, 0, 1);
     private SpriteBatch _spriteBatch;
 
     private SharedContent _sharedContent;
@@ -101,7 +104,8 @@ public class PurplePuffinGame : Game
     protected override void Update(GameTime gameTime)
     {
         _inputState.GetState();
-        
+        TestGamePadInteractions(gameTime);
+
         var events = new Dictionary<SceneTypeEnum, EventBase[]>();
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
@@ -218,6 +222,51 @@ public class PurplePuffinGame : Game
         }
         
         base.Update(gameTime);
+    }
+
+    private void TestGamePadInteractions(GameTime gameTime)
+    {
+        // Periodically dump the connection state of gamepads
+        // Probably don't need to keep this longterm, but definitely need to send events
+        // and handle somehow when controllers connect/disconnect
+        _inputStateLastDump = _inputStateLastDump.Add(gameTime.ElapsedGameTime);
+        if (_inputStateLastDump > _inputStateDumpFrequency)
+        {
+            _inputStateLastDump = TimeSpan.Zero;
+            var currConnected = String.Join(", ", _inputState.CurrentlyConnectedGamePads());
+            if (string.IsNullOrEmpty(currConnected)) currConnected = "(none)";
+            System.Diagnostics.Debug.WriteLine($"Connected game pads: {currConnected}");
+        }
+
+        if (!_inputState.CurrentlyConnectedGamePads().Contains(0)) return;
+
+
+        // direct access checks
+        if (_inputState.IsGamepadButtonTriggered(0, Buttons.Start))
+        {
+            System.Diagnostics.Debug.WriteLine("Ready...");
+        }
+        else if (_inputState.IsGamepadButtonReleased(0, Buttons.Start))
+        {
+            System.Diagnostics.Debug.WriteLine("...let's GO!");
+        }
+
+        if (_inputState.IsGamepadButtonDown(0, Buttons.A))
+        {
+            System.Diagnostics.Debug.WriteLine("Pressed A!");
+        }
+
+        
+        // TODO: handle analog values from triggers and thumbsticks
+        // Can probably remove the direct access to PrevGamePadState and CurrGamePadState after
+        // analog support is added
+        var prev = _inputState.PrevGamePadState(0);
+        var curr = _inputState.CurrGamePadState(0);
+        // left trigger, with amount of pull applied
+        var leftPull = curr.Triggers.Left;
+
+        // left and right thumbstick, each with X and Y floats
+        float thumbStickLeftX = curr.ThumbSticks.Left.X;
     }
 
     protected override void Draw(GameTime gameTime)
