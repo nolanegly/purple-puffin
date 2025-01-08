@@ -14,15 +14,17 @@ public class OptionsMenuScene : Scene
 {
     private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
+    private readonly SpriteBatch _spriteBatch;
     private readonly Desktop _desktop = new();
-    private readonly List<Event> _eventsToReturn = new();
+    private readonly List<EventBase> _eventsToReturn = new();
 
-    public OptionsMenuScene(InputState inputState, GraphicsDevice graphicsDevice)
+    public OptionsMenuScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
     {
         SceneType = SceneTypeEnum.OptionsMenu;
         
         _inputState = inputState;
         _graphicsDevice = graphicsDevice;
+        _spriteBatch = spriteBatch;
     }
 
     public override void LoadContent(SharedContent sharedContent)
@@ -49,7 +51,12 @@ public class OptionsMenuScene : Scene
 
     private void MenuBackToMainMenuOnSelected(object sender, EventArgs e)
     {
-        _eventsToReturn.Add(new Event(EventType.MainMenuRequested));
+        _eventsToReturn.Add(new TransitionEvent(new SceneTransition
+        {
+            OldState = SceneStateEnum.OptionMenu,
+            NewState = SceneStateEnum.MainMenu,
+            DegreeStepAmount = SceneTransition.MediumStep
+        }));
     }
 
     public override EventBase[] Update(GameTime gameTime)
@@ -61,7 +68,8 @@ public class OptionsMenuScene : Scene
 
     public override void Draw(GameTime gameTime)
     {
-        _graphicsDevice.Clear(Color.Black);
         _desktop.Render();
+        
+        DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);        
     }
 }

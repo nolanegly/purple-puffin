@@ -2,6 +2,9 @@
 
 public class SceneTransition
 {
+    public static float SlowStep = 0.01f;
+    public static float MediumStep = 0.03f;
+    
     public SceneStateEnum OldState { get; init; }
     public SceneStateEnum NewState { get; init; }
     public float DegreeStepAmount { get; init; }

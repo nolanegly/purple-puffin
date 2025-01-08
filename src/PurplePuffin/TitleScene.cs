@@ -65,7 +65,7 @@ public class TitleScene : Scene
             {
                 OldState = SceneStateEnum.Title,
                 NewState = SceneStateEnum.MainMenu,
-                DegreeStepAmount = 0.01f
+                DegreeStepAmount = SceneTransition.SlowStep
             }));
         }
     }

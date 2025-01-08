@@ -13,7 +13,7 @@ public class MainMenuScene : Scene
     private readonly InputState _inputState;
     private readonly GraphicsDevice _graphicsDevice;
     private readonly SpriteBatch _spriteBatch;
-    private readonly List<Event> _eventsToReturn = new();
+    private readonly List<EventBase> _eventsToReturn = new();
 
     private readonly Desktop _desktop = new();
     
@@ -62,7 +62,13 @@ public class MainMenuScene : Scene
     
     private void MenuOptionsOnSelected(object sender, EventArgs e)
     {
-        _eventsToReturn.Add(new Event(EventType.OptionsMenuRequested));
+        _eventsToReturn.Add(new TransitionEvent(new SceneTransition
+        {
+            OldState = SceneStateEnum.MainMenu,
+            NewState = SceneStateEnum.OptionMenu,
+            DegreeStepAmount = SceneTransition.MediumStep
+        }));
+        
     }
     
     private void MenuQuitOnSelected(object sender, EventArgs e)

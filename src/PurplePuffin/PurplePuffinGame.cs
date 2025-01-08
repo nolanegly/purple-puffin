@@ -59,7 +59,7 @@ public class PurplePuffinGame : Game
         _scenes.Add(_titleScene);
         _mainMenuScene = new MainMenuScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_mainMenuScene);
-        _optionsMenuScene = new OptionsMenuScene(_inputState, GraphicsDevice);
+        _optionsMenuScene = new OptionsMenuScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_optionsMenuScene);
         _gameScene = new GameScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_gameScene);
@@ -216,12 +216,6 @@ public class PurplePuffinGame : Game
             // TODO: convert these state changes to use TransitionEvent instead
             if (sceneEvent.@event.EventType == EventType.StartNewGameRequested)
                 _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
-            
-            if (sceneEvent.@event.EventType == EventType.MainMenuRequested)
-                _sceneState = SceneState.FromDefinition(SceneStateDefinition.MainMenu);
-            
-            if (sceneEvent.@event.EventType == EventType.OptionsMenuRequested)
-                _sceneState = SceneState.FromDefinition(SceneStateDefinition.OptionsMenu);
         }
         
         base.Update(gameTime);
