@@ -112,8 +112,6 @@ public abstract class Scene
         // don't draw the inbound scene on the fade out, or the outbound scene on the fade in
         if (ShouldBeDrawn == false) return;
         
-        System.Diagnostics.Debug.WriteLine($"{SceneType}: {_transitionState} at alpha of {_transitionAlpha}");
-        
         spriteBatch.Draw(SharedContent.PlaceholderPixel, new Vector2(0, 0), null, 
             new Color(0, 0, 0, _transitionAlpha), 0f, Vector2.Zero, 
             new Vector2(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height),
