@@ -14,6 +14,7 @@ public class TitleScene : Scene
     private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
 
+    private TitleSceneStateEnum _state = TitleSceneStateEnum.NotYetDisplayed;
     private Vector2 _titlePos;
     private TimeSpan? _timeSinceFirstUpdate;
 
@@ -36,7 +37,15 @@ public class TitleScene : Scene
     
     public override EventBase[] Update(GameTime gameTime)
     {
-        WaitTwoSecondsAndThenAdvanceToMainMenu(gameTime);
+        if (_state == TitleSceneStateEnum.NotYetDisplayed)
+        {
+            _timeSinceFirstUpdate = gameTime.TotalGameTime;
+            _state = TitleSceneStateEnum.Displaying;
+        }
+        else if (_state == TitleSceneStateEnum.Displaying)
+        {
+            WaitTwoSecondsAndThenAdvanceToMainMenu(gameTime);
+        }
         
         var result = _eventsToReturn.ToArray();
         _eventsToReturn.Clear();
@@ -55,11 +64,7 @@ public class TitleScene : Scene
     
     private void WaitTwoSecondsAndThenAdvanceToMainMenu(GameTime gameTime)
     {
-        if (_timeSinceFirstUpdate == null)
-        {
-            _timeSinceFirstUpdate = gameTime.TotalGameTime;
-        }
-        else if (gameTime.TotalGameTime > _timeSinceFirstUpdate.Value.Add(new TimeSpan(0, 0, 2)))
+        if (gameTime.TotalGameTime > _timeSinceFirstUpdate.Value.Add(new TimeSpan(0, 0, 2)))
         {
             _eventsToReturn.Add(new TransitionEvent(new SceneTransition
             {
@@ -67,6 +72,16 @@ public class TitleScene : Scene
                 NewState = SceneStateEnum.MainMenu,
                 DegreeStepAmount = SceneTransition.SlowStep
             }));
+            
+            _state = TitleSceneStateEnum.DoneDisplaying;
         }
+    }
+
+    private enum TitleSceneStateEnum
+    {
+        Uninitialized,
+        NotYetDisplayed,
+        Displaying,
+        DoneDisplaying
     }
 }

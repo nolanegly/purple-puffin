@@ -168,8 +168,7 @@ public class PurplePuffinGame : Game
             // instant transition to game screen).
             if (sceneTransition != null)
             {
-                // TODO: figure out why this fires so much
-                //System.Diagnostics.Debug.WriteLine($"WARN: ignoring transition request while already transitioning. {sceneTransitionEvent.Key} requested transition: {sceneTransition}");
+                System.Diagnostics.Debug.WriteLine($"WARN: ignoring transition request while already transitioning. {sceneTransitionEvent.Key} requested transition: {sceneTransition}");
                 
                 // Don't handle the transition event again in the non-transition event processing 
                 sceneAndEvents.Remove(sceneTransitionEvent);
