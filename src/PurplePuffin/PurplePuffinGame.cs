@@ -87,16 +87,21 @@ public class PurplePuffinGame : Game
         
         
         // Naive "how do I make this work" code for music
-        // TODO: this throws an exception on my machine if my Bluetooth headphones aren't turned on!
-        // Need to add exception handling in case no audio hardware is found
-        _backgroundSong = Content.Load<Song>("music\\Juhani Junkala [Chiptune Adventures] 4. Stage Select");
+        try
+        {
+            _backgroundSong = Content.Load<Song>("music\\Juhani Junkala [Chiptune Adventures] 4. Stage Select");
         
-        // stop if something else playing/paused
-        if (MediaPlayer.State != MediaState.Stopped)
-            MediaPlayer.Stop();
+            // stop if something else playing/paused
+            if (MediaPlayer.State != MediaState.Stopped)
+                MediaPlayer.Stop();
 
-        MediaPlayer.Play(_backgroundSong);
-        MediaPlayer.IsRepeating = true;
+            MediaPlayer.Play(_backgroundSong);
+            MediaPlayer.IsRepeating = true;
+        }
+        catch (NoAudioHardwareException e)
+        {
+            System.Diagnostics.Debug.WriteLine($"WARN: caught NoAudioHardwareException {e}");
+        }
     }
 
     protected override void Update(GameTime gameTime)
