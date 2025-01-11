@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using PurplePuffin.Events;
 
 namespace PurplePuffin;
 
@@ -8,10 +10,12 @@ public class InputState
     private KeyboardState _prevKeyboardState;
     private KeyboardState _currKeyboardState;
     
-    private GamePadState[] _prevGamePadStates = new GamePadState[GamePad.MaximumGamePadCount];
-    private GamePadState[] _currGamePadStates = new GamePadState[GamePad.MaximumGamePadCount];
+    private readonly GamePadState[] _prevGamePadStates = new GamePadState[GamePad.MaximumGamePadCount];
+    private readonly GamePadState[] _currGamePadStates = new GamePadState[GamePad.MaximumGamePadCount];
+    
+    private readonly List<EventBase> _eventsToReturn = new();
 
-    public void GetState()
+    public EventBase[] GetState()
     {
         _prevKeyboardState = _currKeyboardState;
         _currKeyboardState = Keyboard.GetState();
@@ -21,16 +25,19 @@ public class InputState
             _prevGamePadStates[i] = _currGamePadStates[i];
             _currGamePadStates[i] = GamePad.GetState(i);
 
-            // TODO: need to send events when gamepads are disconnecting/connecting 
             if (_prevGamePadStates[i].IsConnected && !_currGamePadStates[i].IsConnected)
             {
-                System.Diagnostics.Debug.WriteLine($"GamePad {i} became disconnected!");
+                _eventsToReturn.Add(new GamepadDisconnectedEvent(i));
             }
             else if (!_prevGamePadStates[i].IsConnected && _currGamePadStates[i].IsConnected)
             {
-                System.Diagnostics.Debug.WriteLine($"GamePad {i} became connected!");
+                _eventsToReturn.Add(new GamepadConnectedEvent(i));
             }
         }
+        
+        var result = _eventsToReturn.ToArray();
+        _eventsToReturn.Clear();
+        return result;
     }
     
     public bool IsKeyDown(Keys key)
@@ -58,18 +65,6 @@ public class InputState
         }
         return connectedPads.ToArray();
     }
-
-    // TODO: remove once analog input is available via methods on this class
-    public GamePadState CurrGamePadState(int controllerIndex)
-    {
-        return _currGamePadStates[controllerIndex];
-    }
-    
-    // TODO: remove once analog input is available via methods on this class
-    public GamePadState PrevGamePadState(int controllerIndex)
-    {
-        return _prevGamePadStates[controllerIndex];
-    }
     
     public bool IsGamepadButtonDown(int controllerIndex, Buttons button)
     {
@@ -89,5 +84,33 @@ public class InputState
         return _currGamePadStates[controllerIndex].IsConnected 
                && _currGamePadStates[controllerIndex].IsButtonUp(button)
                && _prevGamePadStates[controllerIndex].IsButtonDown(button);
+    }
+
+    public float GamepadLeftTriggerDegree(int controllerIndex)
+    {
+        return !_currGamePadStates[controllerIndex].IsConnected 
+            ? 0.0f 
+            : _currGamePadStates[controllerIndex].Triggers.Left;
+    }
+    
+    public float GamepadRightTriggerDegree(int controllerIndex)
+    {
+        return !_currGamePadStates[controllerIndex].IsConnected 
+            ? 0.0f 
+            : _currGamePadStates[controllerIndex].Triggers.Right;
+    }
+    
+    public Vector2 GamepadLeftThumbstickDegree(int controllerIndex)
+    {
+        return !_currGamePadStates[controllerIndex].IsConnected 
+            ? Vector2.Zero 
+            : _currGamePadStates[controllerIndex].ThumbSticks.Left;
+    }
+    
+    public Vector2 GamepadRightThumbstickDegree(int controllerIndex)
+    {
+        return !_currGamePadStates[controllerIndex].IsConnected 
+            ? Vector2.Zero 
+            : _currGamePadStates[controllerIndex].ThumbSticks.Right;
     }
 }

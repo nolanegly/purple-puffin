@@ -3,6 +3,8 @@
 public enum EventType
 {
     Uninitialized,
+    GamepadConnected,
+    GamepadDisconnected,
     TransitionRequested,
     StartNewGameRequested,
     PauseGameRequested,
