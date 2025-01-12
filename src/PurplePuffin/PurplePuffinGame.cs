@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
@@ -43,6 +45,13 @@ public class PurplePuffinGame : Game
 
     protected override void Initialize()
     {
+        this.Activated += OnGameActivated;
+        this.Deactivated += OnGameDeactivated;
+        
+        InitializeGraphicsDisplay();
+        if (!_graphics.IsFullScreen)
+            ToggleFullscreen(true);
+        
         // Initialize Myra (the UI library) 
         MyraEnvironment.Game = this;
         
@@ -111,6 +120,12 @@ public class PurplePuffinGame : Game
         // or something, and possibly pass to active scenes?
         var inputEvents = _inputState.GetState();
 
+        // detect keyboard command to toggle fullscreen
+        if (_inputState.IsKeyTriggered(Keys.Enter) &&
+            (_inputState.IsKeyDown(Keys.LeftAlt) || _inputState.IsKeyDown(Keys.RightAlt)))
+        {
+            ToggleFullscreen(!_graphics.IsFullScreen);
+        }
 
         // call Update on each active scene, collecting any events
         var events = new Dictionary<SceneTypeEnum, EventBase[]>();
@@ -248,5 +263,63 @@ public class PurplePuffinGame : Game
         _spriteBatch.End();
 
         base.Draw(gameTime);
+    }
+    
+    private void InitializeGraphicsDisplay()
+    {
+        Window.ClientSizeChanged += WindowOnClientSizeChanged;
+        Window.OrientationChanged += WindowOnOrientationChanged; // This will probably never fire unless on mobile platform
+        
+        Window.AllowAltF4 = true;
+        Window.IsBorderless = false;
+        Window.Title = "Prototype - Purple Puffin";
+        Window.AllowUserResizing = true;
+        
+        _graphics.HardwareModeSwitch = true;
+    }
+
+    private void ToggleFullscreen(bool isFullScreen)
+    {
+        if (isFullScreen)
+        {
+            // Set the resolution equal to current display resolution.
+            // If you don't, you might get the display's lowest resolution by default.
+            _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            _graphics.IsFullScreen = true;
+        }
+        else
+        {
+            // TODO: figure out what default size and aspect ratio make sense for the actual game when windowed.
+            _graphics.PreferredBackBufferWidth = 1024;
+            _graphics.PreferredBackBufferHeight = 768;
+            _graphics.IsFullScreen = false;
+        }
+
+        _graphics.ApplyChanges();
+    }
+
+    private void OnGameActivated(object sender, EventArgs e)
+    {
+        System.Diagnostics.Debug.WriteLine("Game activated");
+    }
+
+    private void OnGameDeactivated(object sender, EventArgs e)
+    {
+        // TODO: this will fire whenever the game screen (whether windowed or full screen) loses focus.
+        // Will need to handle this in the game loop, so play pauses automatically
+        System.Diagnostics.Debug.WriteLine("Game deactivated");
+    }
+
+    private void WindowOnOrientationChanged(object sender, EventArgs e)
+    {
+        System.Diagnostics.Debug.WriteLine($"WindowOnOrientationChanged: {Window.CurrentOrientation}");
+    }
+
+    private void WindowOnClientSizeChanged(object sender, EventArgs e)
+    {
+        // TODO: need to deal with window size changes to resize the drawn elements properly,
+        // and potentially adding letterboxes or pillarboxes
+        System.Diagnostics.Debug.WriteLine($"WindowOnClientSizeChanged: {Window.ClientBounds}");
     }
 }
