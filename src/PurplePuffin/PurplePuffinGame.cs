@@ -106,11 +106,13 @@ public class PurplePuffinGame : Game
 
     protected override void Update(GameTime gameTime)
     {
-        // Not quite sure what to do with these yet. Might handle here,
-        // or might save the return value with SceneType.Input or something,
-        // and possibly pass to active scenes?
+        // TODO: Not quite sure what to do with gamepad connect/disconnect events yet.
+        // Might handle here, or might save the return value with SceneType.Input
+        // or something, and possibly pass to active scenes?
         var inputEvents = _inputState.GetState();
 
+
+        // call Update on each active scene, collecting any events
         var events = new Dictionary<SceneTypeEnum, EventBase[]>();
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
@@ -119,11 +121,12 @@ public class PurplePuffinGame : Game
             events.Add(activeScene.SceneType, activeScene.Update(gameTime));
         }
         
+        // select tuple of requesting scene and event
         var sceneAndEvents = events.SelectMany(pair => 
             pair.Value.Select(@event => new { pair.Key, @event }))
             .ToList();
 
-        // Handle transition event first (choose one if there are multiples for some reason)
+        // Handle transition event first (choose one if there are multiple transitions for some reason, that shouldn't happen)
         var sceneTransitionEvent = sceneAndEvents.FirstOrDefault(e => e.@event is TransitionEvent);
         var sceneTransition = (sceneTransitionEvent?.@event as TransitionEvent)?.SceneTransition;
         
