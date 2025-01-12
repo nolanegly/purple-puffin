@@ -15,12 +15,19 @@ namespace PurplePuffin;
 
 public class PurplePuffinGame : Game
 {
+    // Our target/base resolution we will render at, and then scale up or down based on actual physical resolution.
+    // Based on Steam statistics I'm not worried about the approximately 7% of users with a resolution lower than HD.
+    public const int VirtualWidth = 1920;
+    public const int VirtualHeight = 1080;
+    
     private GraphicsDeviceManager _graphics;
+    // Dimensions of the screen before toggling into fullsize, so they can be restored when toggling out.
     private int _windowWidth;
     private int _windowHeight;
     
     private InputState _inputState;
     private SpriteBatch _spriteBatch;
+    private Matrix _spriteScale;
 
     private SharedContent _sharedContent;
     
@@ -32,7 +39,7 @@ public class PurplePuffinGame : Game
     private GameScene _gameScene;
     private GamePausedScene _gamePausedScene;
     
-    private readonly List<Scene> _scenes = new(4);
+    private readonly List<Scene> _scenes = new(5);
 
     private Song _backgroundSong;
 
@@ -90,6 +97,7 @@ public class PurplePuffinGame : Game
         _sharedContent.PlaceholderPixel.SetData<Color>(new Color[] { Color.Black });
         
         _sharedContent.ArialFont = Content.Load<SpriteFont>("arial");
+        _sharedContent.ScaleExperiment = Content.Load<Texture2D>("scale-experiment");
 
         _titleScene.LoadContent(_sharedContent);
         _mainMenuScene.LoadContent(_sharedContent);
@@ -246,15 +254,55 @@ public class PurplePuffinGame : Game
             if (sceneEvent.@event.EventType == EventType.StartNewGameRequested)
                 _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
         }
+
+        CheckForScaleExperimentChanges();
         
         base.Update(gameTime);
     }
-    
+
+    private void CheckForScaleExperimentChanges()
+    {
+        // Convenience method to quickly toggle between some specific resolutions for testing.
+        
+        if (_inputState.IsKeyTriggered(Keys.Y))
+        {
+            // 0.833% of our virtual/target resolution (but still same aspect ratio)
+            _graphics.PreferredBackBufferHeight = 900;
+            _graphics.PreferredBackBufferWidth = 1600;
+            _graphics.ApplyChanges();
+            UpdateSpriteScale();
+        }
+        else if (_inputState.IsKeyTriggered(Keys.U))
+        {
+            // Our virtual/target resolution
+            _graphics.PreferredBackBufferHeight = 1080;
+            _graphics.PreferredBackBufferWidth = 1920;
+            _graphics.ApplyChanges();
+            UpdateSpriteScale();
+        }
+        else if (_inputState.IsKeyTriggered(Keys.I))
+        {
+            // 2x our virtual/target resolution
+            _graphics.PreferredBackBufferHeight = 1440;
+            _graphics.PreferredBackBufferWidth = 2560;
+            _graphics.ApplyChanges();
+            UpdateSpriteScale();
+        }
+        else if (_inputState.IsKeyTriggered(Keys.O))
+        {
+            // 3x our virtual/target resolution (native display resolution)
+            _graphics.PreferredBackBufferHeight = 2160;
+            _graphics.PreferredBackBufferWidth = 3840;
+            _graphics.ApplyChanges();
+            UpdateSpriteScale();
+        }
+    }
+
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.CornflowerBlue);
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(transformMatrix: _spriteScale);
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
         {
@@ -290,9 +338,23 @@ public class PurplePuffinGame : Game
         Window.IsBorderless = false;
         Window.Title = "Prototype - Purple Puffin";
         Window.AllowUserResizing = true;
-        // TODO: figure out what default size and aspect ratio make sense for the actual game when windowed.
         
         _graphics.HardwareModeSwitch = true;
+        
+        // TODO: check supported resolutions beforehand, in case max supported is lower than our virtual.
+        _graphics.PreferredBackBufferHeight = VirtualHeight;
+        _graphics.PreferredBackBufferWidth = VirtualWidth;
+        
+        // Initialize our scaling value
+        UpdateSpriteScale();
+    }
+    
+    private void UpdateSpriteScale()
+    {
+        var scaleX = _graphics.GraphicsDevice.Viewport.Width / (float) VirtualWidth;
+        var scaleY = _graphics.GraphicsDevice.Viewport.Height / (float) VirtualHeight;
+        // Create the scale transform for Draw (do NOT scale the sprite depth, keep Z=1).
+        _spriteScale = Matrix.CreateScale(scaleX, scaleY, 1);
     }
 
     private void ToggleFullscreen(bool isFullScreen)
@@ -316,6 +378,8 @@ public class PurplePuffinGame : Game
             _graphics.IsFullScreen = false;
         }
 
+        // Update our scaling values when drawing area size changes.
+        UpdateSpriteScale();
         _graphics.ApplyChanges();
     }
 
@@ -338,8 +402,9 @@ public class PurplePuffinGame : Game
 
     private void WindowOnClientSizeChanged(object sender, EventArgs e)
     {
-        // TODO: need to deal with window size changes to resize the drawn elements properly,
-        // and potentially adding letterboxes or pillarboxes
         System.Diagnostics.Debug.WriteLine($"WindowOnClientSizeChanged: {Window.ClientBounds}");
+        
+        // Update our scaling values when drawing area size changes.
+        UpdateSpriteScale();
     }
 }

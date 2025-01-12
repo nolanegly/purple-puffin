@@ -6,8 +6,8 @@
   - will acquaint me with UI control library
 - [X] Add a fade out transition effect between two scenes
 - [X] Add general scene transition support
-- [ ] Add support for detecting/querying input state changes to replace the ad-hoc detection in the Game and GamePaused scenes
-  - [ ] Finish converting scene state changes to transitions should be easier once input detection is better
+- [X] Add support for detecting/querying input state changes to replace the ad-hoc detection in the Game and GamePaused scenes
+  - [X] Finish converting scene state changes to transitions should be easier once input detection is better
 - [ ] Add a credits screen that cites music source
   - Juhani Junkala, https://juhanijunkala.com/
   - music tracks have been released under CC0 creative commons license
@@ -15,10 +15,13 @@
   - Start doing this iteratively, to detect compatibility issues as early as possible
 
 # Later
-- [ ] Draw a sprite
+- [X] Draw a sprite
 - [ ] Move a sprite in response to player input
-- [ ] Deal with resolution changes
-- [ ] Deal with window size changes
+- [WIP] Deal with resolution changes
+  - [WIP] Implement ability to perserve aspect ratio and add letterbox/pillarbox as needed.
+        Make "out of ratio" window sizing an opt-in adjustment.
+
+- [X] Deal with window size changes
 - [ ] Deal with gamepad disconnecting during play
 - [ ] Investigate augmenting/replacing the SceneState with a .NET library for state machines
   - Instead of recording OldState and NewState on a "Transition" SceneType, it might make more sense
@@ -28,7 +31,7 @@
 
 
 # Polish
-- [ ] Add a transition between title scene and game scene.
+- [X] Add a transition between title scene and game scene.
   - See C:\dev\MonoGame-Samples\NetRumble\ScreenManager\ScreenManager.cs for an example fade method
   - Might need to have concept of "transitioning" to ignore user input during the transition
   - Also see code comment about subtle issue changing active scene between Update() and Draw()

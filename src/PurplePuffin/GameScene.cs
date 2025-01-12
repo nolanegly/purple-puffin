@@ -72,12 +72,15 @@ public class GameScene : Scene
 
     public override void Draw(GameTime gameTime)
     {
-        var message = "Game scene";
-        var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
-        var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
-        var color = Color.LightGreen * _messageAlpha;
-        _spriteBatch.DrawString(SharedContent.ArialFont, message, messagePos, color,
-            0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
+        // var message = "Game scene";
+        // var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
+        // var messagePos = new Vector2(_centerScene.X + (_centerScene.X * _messageOffset), _centerScene.Y);
+        // var color = Color.LightGreen * _messageAlpha;
+        // _spriteBatch.DrawString(SharedContent.ArialFont, message, messagePos, color,
+        //     0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
+
+        
+        _spriteBatch.Draw(SharedContent.ScaleExperiment, new Vector2(0, 0), Color.White);
     }
     
     public override void BeginTransition(SceneTransition sceneTransition, GameTime gameTime)

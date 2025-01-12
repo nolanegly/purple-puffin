@@ -15,7 +15,6 @@ public class TitleScene : Scene
     private readonly List<EventBase> _eventsToReturn = new();
 
     private TitleSceneStateEnum _state = TitleSceneStateEnum.NotYetDisplayed;
-    private Vector2 _titlePos;
     private TimeSpan? _timeSinceFirstUpdate;
 
     public TitleScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
@@ -27,14 +26,6 @@ public class TitleScene : Scene
         _spriteBatch = spriteBatch;
     }
 
-    public override void LoadContent(SharedContent sharedContent)
-    {
-        base.LoadContent(sharedContent);
-        
-        var viewport = _graphicsDevice.Viewport;
-        _titlePos = new Vector2(viewport.Width / 2, viewport.Height / 2);
-    }
-    
     public override EventBase[] Update(GameTime gameTime)
     {
         if (_state == TitleSceneStateEnum.NotYetDisplayed)
@@ -56,7 +47,11 @@ public class TitleScene : Scene
     {
         var message = "Title scene";
         var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
-        _spriteBatch.DrawString(SharedContent.ArialFont, message, _titlePos, Color.LightGreen,
+        
+        // TODO: title screen text is not centered now that we're launching in fullscreen for some reason
+        var titlePos = new Vector2(_graphicsDevice.Viewport.Width / 2, _graphicsDevice.Viewport.Height / 2);
+
+        _spriteBatch.DrawString(SharedContent.ArialFont, message, titlePos, Color.LightGreen,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
         
         DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);
