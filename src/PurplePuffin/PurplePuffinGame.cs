@@ -16,6 +16,9 @@ namespace PurplePuffin;
 public class PurplePuffinGame : Game
 {
     private GraphicsDeviceManager _graphics;
+    private int _windowWidth;
+    private int _windowHeight;
+    
     private InputState _inputState;
     private SpriteBatch _spriteBatch;
 
@@ -267,6 +270,19 @@ public class PurplePuffinGame : Game
     
     private void InitializeGraphicsDisplay()
     {
+        // Log current and supported display modes for troubleshooting purposes 
+        var c = GraphicsDevice.Adapter.CurrentDisplayMode;
+        System.Diagnostics.Debug.WriteLine($"Current display mode: {c.Width}x{c.Height}, Format: {c.Format} TitleSafeArea: {c.TitleSafeArea}");
+        System.Diagnostics.Debug.WriteLine("Supported display modes are:");
+        var supported = GraphicsDevice.Adapter.SupportedDisplayModes.ToArray();
+        for (var i = 0; i < supported.Length; i++)
+        {
+            var s = supported[i];
+            System.Diagnostics.Debug.WriteLine($"{i:D3}: {s.Width}x{s.Height}, Format: {s.Format} TitleSafeArea: {s.TitleSafeArea}");
+        }
+            
+        
+        
         Window.ClientSizeChanged += WindowOnClientSizeChanged;
         Window.OrientationChanged += WindowOnOrientationChanged; // This will probably never fire unless on mobile platform
         
@@ -274,6 +290,7 @@ public class PurplePuffinGame : Game
         Window.IsBorderless = false;
         Window.Title = "Prototype - Purple Puffin";
         Window.AllowUserResizing = true;
+        // TODO: figure out what default size and aspect ratio make sense for the actual game when windowed.
         
         _graphics.HardwareModeSwitch = true;
     }
@@ -282,17 +299,20 @@ public class PurplePuffinGame : Game
     {
         if (isFullScreen)
         {
+            // Save window size before going full screen in case we toggle back
+            _windowWidth = Window.ClientBounds.Width;
+            _windowHeight = Window.ClientBounds.Height;
+
             // Set the resolution equal to current display resolution.
             // If you don't, you might get the display's lowest resolution by default.
-            _graphics.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            _graphics.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            _graphics.PreferredBackBufferWidth = GraphicsDevice.Adapter.CurrentDisplayMode.Width;
+            _graphics.PreferredBackBufferHeight = GraphicsDevice.Adapter.CurrentDisplayMode.Height;
             _graphics.IsFullScreen = true;
         }
         else
         {
-            // TODO: figure out what default size and aspect ratio make sense for the actual game when windowed.
-            _graphics.PreferredBackBufferWidth = 1024;
-            _graphics.PreferredBackBufferHeight = 768;
+            _graphics.PreferredBackBufferWidth = _windowWidth;
+            _graphics.PreferredBackBufferHeight = _windowHeight;
             _graphics.IsFullScreen = false;
         }
 
