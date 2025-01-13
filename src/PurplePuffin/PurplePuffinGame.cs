@@ -59,8 +59,8 @@ public class PurplePuffinGame : Game
         this.Deactivated += OnGameDeactivated;
         
         InitializeGraphicsDisplay();
-        if (!_graphics.IsFullScreen)
-            ToggleFullscreen(true);
+        // if (!_graphics.IsFullScreen)
+        //     ToggleFullscreen(true);
         
         // Initialize Myra (the UI library) 
         MyraEnvironment.Game = this;
@@ -86,7 +86,7 @@ public class PurplePuffinGame : Game
         _gamePausedScene = new GamePausedScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_gamePausedScene);
 
-        _sceneState = SceneState.FromDefinition(SceneStateDefinition.Title);
+        _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
 
         base.Initialize();
     }
@@ -270,7 +270,7 @@ public class PurplePuffinGame : Game
             _graphics.PreferredBackBufferHeight = 900;
             _graphics.PreferredBackBufferWidth = 1600;
             _graphics.ApplyChanges();
-            UpdateSpriteScale();
+            UpdateTargetRenderAreaAndScaling();
         }
         else if (_inputState.IsKeyTriggered(Keys.U))
         {
@@ -278,7 +278,7 @@ public class PurplePuffinGame : Game
             _graphics.PreferredBackBufferHeight = 1080;
             _graphics.PreferredBackBufferWidth = 1920;
             _graphics.ApplyChanges();
-            UpdateSpriteScale();
+            UpdateTargetRenderAreaAndScaling();
         }
         else if (_inputState.IsKeyTriggered(Keys.I))
         {
@@ -286,7 +286,7 @@ public class PurplePuffinGame : Game
             _graphics.PreferredBackBufferHeight = 1440;
             _graphics.PreferredBackBufferWidth = 2560;
             _graphics.ApplyChanges();
-            UpdateSpriteScale();
+            UpdateTargetRenderAreaAndScaling();
         }
         else if (_inputState.IsKeyTriggered(Keys.O))
         {
@@ -294,14 +294,16 @@ public class PurplePuffinGame : Game
             _graphics.PreferredBackBufferHeight = 2160;
             _graphics.PreferredBackBufferWidth = 3840;
             _graphics.ApplyChanges();
-            UpdateSpriteScale();
+            UpdateTargetRenderAreaAndScaling();
         }
     }
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
+        // Whatever color is used here will be the color letterboxes/pillarboxes when aspect ratio is being maintained
+        // on a display area larger than we are rendering when preventing distortion.
+        GraphicsDevice.Clear(Color.Black);
+        
         _spriteBatch.Begin(transformMatrix: _spriteScale);
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
@@ -345,14 +347,57 @@ public class PurplePuffinGame : Game
         _graphics.PreferredBackBufferHeight = VirtualHeight;
         _graphics.PreferredBackBufferWidth = VirtualWidth;
         
-        // Initialize our scaling value
-        UpdateSpriteScale();
+        // Initialize our rendering area and scaling
+        UpdateTargetRenderAreaAndScaling();
     }
     
-    private void UpdateSpriteScale()
+    private void UpdateTargetRenderAreaAndScaling()
     {
+        var actualWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
+        var actualHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+        
+        // If at least one dimension is below virtual resolution, set drawing area to match available area.
+        if (_graphics.GraphicsDevice.PresentationParameters.BackBufferWidth < VirtualWidth ||
+            _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight < VirtualHeight)
+        {
+            Debug.WriteLine($"UpdateSpriteScale: at least one dimension is below virtual, setting viewport to match actual of {actualWidth}x{actualHeight}");
+            _graphics.GraphicsDevice.Viewport =
+                new Viewport(0, 0, actualWidth, actualHeight, 0, 1);
+        }
+        // Otherwise, if at least one dimension exceeds virtual resolution, apply letterboxing/pillarboxing if needed.
+        else if (actualWidth > VirtualWidth || actualHeight > VirtualHeight)
+        {
+            Debug.WriteLine($"UpdateSpriteScale: at least one dimension of {actualWidth}x{actualHeight} exceeds virtual, applying boxing");
+
+            var maxRepeatsX = actualWidth / VirtualWidth;
+            var maxRepeatsY = actualHeight / VirtualHeight;
+            if (maxRepeatsX != maxRepeatsY)
+            {
+                // Don't repeat unevenly, e.g. twice horizontally and once vertically. This will distort the output.
+                var restrictedRepeat = Math.Min(maxRepeatsX, maxRepeatsY);
+                Debug.WriteLine($"UpdateSpriteScale: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
+                maxRepeatsX = restrictedRepeat;
+                maxRepeatsY = restrictedRepeat;
+            }
+            
+            // Calculate the padding needed for the number of increments on each dimension.
+            var totalHorizontalWidth = VirtualWidth * maxRepeatsX;
+            var horizontalPadNeeded = (actualWidth - totalHorizontalWidth) / 2;
+            Debug.WriteLine($"UpdateSpriteScale: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
+            
+            var totalVerticalHeight = VirtualHeight * maxRepeatsY;
+            var verticalPadNeeded = (actualHeight - totalVerticalHeight) / 2;
+            Debug.WriteLine($"UpdateSpriteScale: Y repeats {maxRepeatsY} times with {totalVerticalHeight} total height and {verticalPadNeeded} vertical pad");
+            
+            // Restrict drawing to aspect ratio correct area.
+            _graphics.GraphicsDevice.Viewport =
+                new Viewport(horizontalPadNeeded, verticalPadNeeded, 
+                    totalHorizontalWidth, totalVerticalHeight, 0, 1);
+        }
+        // Now that we've established what area of screen to draw into, determine the needed scaling to fill it.
         var scaleX = _graphics.GraphicsDevice.Viewport.Width / (float) VirtualWidth;
         var scaleY = _graphics.GraphicsDevice.Viewport.Height / (float) VirtualHeight;
+        Debug.WriteLine($"UpdateSpriteScale: setting sprite scale to {scaleX} X and {scaleY} Y");
         // Create the scale transform for Draw (do NOT scale the sprite depth, keep Z=1).
         _spriteScale = Matrix.CreateScale(scaleX, scaleY, 1);
     }
@@ -378,8 +423,8 @@ public class PurplePuffinGame : Game
             _graphics.IsFullScreen = false;
         }
 
-        // Update our scaling values when drawing area size changes.
-        UpdateSpriteScale();
+        // Update our rendering when the drawing area size changes.
+        UpdateTargetRenderAreaAndScaling();
         _graphics.ApplyChanges();
     }
 
@@ -404,7 +449,7 @@ public class PurplePuffinGame : Game
     {
         System.Diagnostics.Debug.WriteLine($"WindowOnClientSizeChanged: {Window.ClientBounds}");
         
-        // Update our scaling values when drawing area size changes.
-        UpdateSpriteScale();
+        // Update our rendering when drawing area size changes.
+        UpdateTargetRenderAreaAndScaling();
     }
 }

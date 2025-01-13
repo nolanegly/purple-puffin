@@ -18,8 +18,11 @@
 - [X] Draw a sprite
 - [ ] Move a sprite in response to player input
 - [WIP] Deal with resolution changes
-  - [WIP] Implement ability to perserve aspect ratio and add letterbox/pillarbox as needed.
-        Make "out of ratio" window sizing an opt-in adjustment.
+  - [X] Implement ability to perserve aspect ratio and add letterbox/pillarbox as needed.
+      - [WIP] Make "out of ratio" window sizing an opt-in adjustment.
+        - Try resizing a window when window size changes? Might not actually resize the OS window though.
+          The other option would be to disallow window resizing, and then provide an in-game menu option
+          to choose scaled size (e.g. 2x, 3x, etc.). I think the NEStopia emulator works like this.
 
 - [X] Deal with window size changes
 - [ ] Deal with gamepad disconnecting during play
