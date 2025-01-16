@@ -20,6 +20,9 @@ public class PurplePuffinGame : Game
     public const int VirtualWidth = 1920;
     public const int VirtualHeight = 1080;
     
+    // TODO: this should be a compiler directive, to avoid doing the same logic checks over and over again at runtime.
+    public const bool AllowSuboptimalResolution = false;
+    
     private GraphicsDeviceManager _graphics;
     // Dimensions of the screen before toggling into fullsize, so they can be restored when toggling out.
     private int _windowWidth;
@@ -322,8 +325,8 @@ public class PurplePuffinGame : Game
     private void InitializeGraphicsDisplay()
     {
         // Log current and supported display modes for troubleshooting purposes 
-        var c = GraphicsDevice.Adapter.CurrentDisplayMode;
-        System.Diagnostics.Debug.WriteLine($"Current display mode: {c.Width}x{c.Height}, Format: {c.Format} TitleSafeArea: {c.TitleSafeArea}");
+        var curr = GraphicsDevice.Adapter.CurrentDisplayMode;
+        System.Diagnostics.Debug.WriteLine($"Current display mode: {curr.Width}x{curr.Height}, Format: {curr.Format} TitleSafeArea: {curr.TitleSafeArea}");
         System.Diagnostics.Debug.WriteLine("Supported display modes are:");
         var supported = GraphicsDevice.Adapter.SupportedDisplayModes.ToArray();
         for (var i = 0; i < supported.Length; i++)
@@ -331,8 +334,24 @@ public class PurplePuffinGame : Game
             var s = supported[i];
             System.Diagnostics.Debug.WriteLine($"{i:D3}: {s.Width}x{s.Height}, Format: {s.Format} TitleSafeArea: {s.TitleSafeArea}");
         }
-            
-        
+
+        if (AllowSuboptimalResolution == false)
+        {
+            // Exit immediately if the player's screen does not support at least our virtual resolution.
+            if (curr.Height < VirtualHeight || curr.Width < VirtualWidth)
+            {
+                var msg = $"This lowest screen resolution this game currently supports is {VirtualWidth}x{VirtualHeight}, the current resolution is {curr.Width}x{curr.Height}. The game will now exit.";
+                System.Diagnostics.Debug.WriteLine(msg);
+                
+                // This unfortunately doesn't always work. Supported when project targets WindowsDX, but not
+                // OpenGL (which is what you presumably get when target is set to Any).
+                // See https://community.monogame.net/t/microsoft-xna-framework-input-messagebox/20056
+                // MessageBox.Show("Cannot Run", $"This lowest screen resolution this game currently supports is {VirtualWidth}x{VirtualHeight}, the current resolution is {curr.Width}x{curr.Height}. The game will now exit.", ["OK"]);
+                
+                // TODO: low priority, figure out how to tell player their resolution is not supported before just silently exiting.
+                Exit();
+            }
+        }
         
         Window.ClientSizeChanged += WindowOnClientSizeChanged;
         Window.OrientationChanged += WindowOnOrientationChanged; // This will probably never fire unless on mobile platform
@@ -343,8 +362,8 @@ public class PurplePuffinGame : Game
         Window.AllowUserResizing = true;
         
         _graphics.HardwareModeSwitch = true;
-        
-        // TODO: check supported resolutions beforehand, in case max supported is lower than our virtual.
+
+        // Start game at our virtual resolution
         _graphics.PreferredBackBufferHeight = VirtualHeight;
         _graphics.PreferredBackBufferWidth = VirtualWidth;
         
@@ -356,19 +375,30 @@ public class PurplePuffinGame : Game
     {
         var actualWidth = _graphics.GraphicsDevice.PresentationParameters.BackBufferWidth;
         var actualHeight = _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight;
+        Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: back buffer size is now {actualWidth}x{actualHeight}");
         
-        // If at least one dimension is below virtual resolution, set drawing area to match available area.
+        // Handle at least one dimension is below virtual resolution
         if (_graphics.GraphicsDevice.PresentationParameters.BackBufferWidth < VirtualWidth ||
             _graphics.GraphicsDevice.PresentationParameters.BackBufferHeight < VirtualHeight)
         {
-            Debug.WriteLine($"UpdateSpriteScale: at least one dimension is below virtual, setting viewport to match actual of {actualWidth}x{actualHeight}");
-            _graphics.GraphicsDevice.Viewport =
-                new Viewport(0, 0, actualWidth, actualHeight, 0, 1);
+            if (AllowSuboptimalResolution == false)
+            {
+                // If below virtual resolution, force suboptimal size back to at least our virtual size
+                _graphics.PreferredBackBufferHeight = VirtualHeight;
+                _graphics.PreferredBackBufferWidth = VirtualWidth;
+                _graphics.ApplyChanges();
+            }
+            else
+            {
+                // Set drawing area to match available area. It will be distorted because it
+                // will be scaled down below our virtual resolution, and the aspect ratio is probably different.
+                _graphics.GraphicsDevice.Viewport = new Viewport(0, 0, actualWidth, actualHeight, 0, 1);
+            }
         }
         // Otherwise, if at least one dimension exceeds virtual resolution, apply letterboxing/pillarboxing if needed.
         else if (actualWidth > VirtualWidth || actualHeight > VirtualHeight)
         {
-            Debug.WriteLine($"UpdateSpriteScale: at least one dimension of {actualWidth}x{actualHeight} exceeds virtual, applying boxing");
+            Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: at least one dimension of {actualWidth}x{actualHeight} exceeds virtual, applying boxing");
 
             var maxRepeatsX = actualWidth / VirtualWidth;
             var maxRepeatsY = actualHeight / VirtualHeight;
@@ -376,7 +406,7 @@ public class PurplePuffinGame : Game
             {
                 // Don't repeat unevenly, e.g. twice horizontally and once vertically. This will distort the output.
                 var restrictedRepeat = Math.Min(maxRepeatsX, maxRepeatsY);
-                Debug.WriteLine($"UpdateSpriteScale: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
                 maxRepeatsX = restrictedRepeat;
                 maxRepeatsY = restrictedRepeat;
             }
@@ -384,7 +414,7 @@ public class PurplePuffinGame : Game
             // Calculate the padding needed for the number of increments on each dimension.
             var totalHorizontalWidth = VirtualWidth * maxRepeatsX;
             var horizontalPadNeeded = (actualWidth - totalHorizontalWidth) / 2;
-            Debug.WriteLine($"UpdateSpriteScale: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
+            Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
             
             var totalVerticalHeight = VirtualHeight * maxRepeatsY;
             var verticalPadNeeded = (actualHeight - totalVerticalHeight) / 2;
@@ -395,6 +425,7 @@ public class PurplePuffinGame : Game
                 new Viewport(horizontalPadNeeded, verticalPadNeeded, 
                     totalHorizontalWidth, totalVerticalHeight, 0, 1);
         }
+        
         // Now that we've established what area of screen to draw into, determine the needed scaling to fill it.
         var scaleX = _graphics.GraphicsDevice.Viewport.Width / (float) VirtualWidth;
         var scaleY = _graphics.GraphicsDevice.Viewport.Height / (float) VirtualHeight;
