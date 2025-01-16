@@ -59,12 +59,15 @@ public class PurplePuffinGame : Game
 
     protected override void Initialize()
     {
+        // Make config changes that make constant start/stop for devs easier.
+        ApplyDebugConvenienceOverrides();
+        
         this.Activated += OnGameActivated;
         this.Deactivated += OnGameDeactivated;
         
         InitializeGraphicsDisplay();
-        // if (!_graphics.IsFullScreen)
-        //     ToggleFullscreen(true);
+        if (Defaults.StartFullScreen == true)
+            ToggleFullscreen(true);
         
         // Initialize Myra (the UI library) 
         MyraEnvironment.Game = this;
@@ -90,7 +93,7 @@ public class PurplePuffinGame : Game
         _gamePausedScene = new GamePausedScene(_inputState, GraphicsDevice, _spriteBatch);
         _scenes.Add(_gamePausedScene);
 
-        _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
+        _sceneState = SceneState.FromDefinition(Defaults.InitialScene);
 
         base.Initialize();
     }
@@ -488,5 +491,12 @@ public class PurplePuffinGame : Game
         
         // Update our rendering when drawing area size changes.
         UpdateTargetRenderAreaAndScaling();
+    }
+    
+    private static void ApplyDebugConvenienceOverrides()
+    {
+        Defaults.MusicPlayerVolume = 0.0f; // annoying while coding
+        Defaults.StartFullScreen = false; // takes less time to launch
+        Defaults.InitialScene = SceneStateDefinition.GamePlay; // jump straight to the scene being worked on
     }
 }

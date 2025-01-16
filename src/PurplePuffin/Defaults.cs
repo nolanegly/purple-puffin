@@ -1,6 +1,10 @@
-﻿namespace PurplePuffin;
+﻿using PurplePuffin.SceneManagement;
+
+namespace PurplePuffin;
 
 public static class Defaults
 {
-    public const float MusicPlayerVolume = 0.5f;
+    public static float MusicPlayerVolume = 0.5f;
+    public static bool StartFullScreen = true;
+    public static SceneStateDefinition InitialScene = SceneStateDefinition.Title;
 }
