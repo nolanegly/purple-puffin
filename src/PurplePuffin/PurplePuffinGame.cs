@@ -22,7 +22,7 @@ public class PurplePuffinGame : Game
     
     // TODO: these should be compiler directives, to avoid doing the same logic checks over and over again at runtime.
     public const bool AllowSuboptimalResolution = false; // Don't let the game run smaller than virtual resolution
-    public const bool PreserveAspectRatio = false; // Apply letter/pillar boxing to prevent aspect ratio distortion
+    public const bool PreserveAspectRatio = true; // Apply letter/pillar boxing to prevent aspect ratio distortion
     
     private GraphicsDeviceManager _graphics;
     // Dimensions of the screen before toggling into fullsize, so they can be restored when toggling out.
@@ -404,27 +404,27 @@ public class PurplePuffinGame : Game
             {
                 Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: applying any needed boxing for {actualWidth}x{actualHeight} to be drawn at aspect ratio");
 
-                var maxRepeatsX = actualWidth / VirtualWidth;
-                var maxRepeatsY = actualHeight / VirtualHeight;
-                if (maxRepeatsX != maxRepeatsY)
+                var scaleIncrementX = actualWidth / VirtualWidth;
+                var scaleIncrementY = actualHeight / VirtualHeight;
+                if (scaleIncrementX != scaleIncrementY)
                 {
-                    // Don't repeat unevenly, e.g. twice horizontally and once vertically. This will distort the output.
-                    var restrictedRepeat = Math.Min(maxRepeatsX, maxRepeatsY);
-                    Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
-                    maxRepeatsX = restrictedRepeat;
-                    maxRepeatsY = restrictedRepeat;
+                    // Don't scale unevenly, e.g. 2 horizontally but only 1 vertically. This will distort the output.
+                    var scaleMax = Math.Min(scaleIncrementX, scaleIncrementY);
+                    Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: restricting scale to {scaleMax} (X scales {scaleIncrementX}, Y scales {scaleIncrementY})");
+                    scaleIncrementX = scaleMax;
+                    scaleIncrementY = scaleMax;
                 }
             
                 // Calculate the padding needed for the number of increments on each dimension.
-                var totalHorizontalWidth = VirtualWidth * maxRepeatsX;
+                var totalHorizontalWidth = VirtualWidth * scaleIncrementX;
                 var horizontalPadNeeded = (actualWidth - totalHorizontalWidth) / 2;
-                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: X renders {totalHorizontalWidth} wide with {horizontalPadNeeded} horizontal pad");            
             
-                var totalVerticalHeight = VirtualHeight * maxRepeatsY;
+                var totalVerticalHeight = VirtualHeight * scaleIncrementY;
                 var verticalPadNeeded = (actualHeight - totalVerticalHeight) / 2;
-                Debug.WriteLine($"UpdateSpriteScale: Y repeats {maxRepeatsY} times with {totalVerticalHeight} total height and {verticalPadNeeded} vertical pad");
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: Y renders {totalVerticalHeight} wide with {verticalPadNeeded} vertical pad");
             
-                // Restrict drawing to aspect ratio correct area.
+                // Center the drawing into an area that matches the virtual resolution target ratio.
                 _graphics.GraphicsDevice.Viewport =
                     new Viewport(horizontalPadNeeded, verticalPadNeeded,
                         totalHorizontalWidth, totalVerticalHeight, 0, 1);
