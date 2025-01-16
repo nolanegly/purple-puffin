@@ -19,11 +19,9 @@
 - [ ] Move a sprite in response to player input
 - [WIP] Deal with resolution changes
   - [X] Implement ability to perserve aspect ratio and add letterbox/pillarbox as needed.
-      - [WIP] Make "out of ratio" window sizing an opt-in adjustment.
-        - Try resizing a window when window size changes? Might not actually resize the OS window though.
-          The other option would be to disallow window resizing, and then provide an in-game menu option
-          to choose scaled size (e.g. 2x, 3x, etc.). I think the NEStopia emulator works like this.
-
+      - [X] Make "out of ratio" window sizing an opt-in adjustment.
+  - [ ] Fix scaling problem with TitleScreen DrawString() when scale > 1
+  - [ ] Determine if Myra can scale with resolution increases, the buttons are now ridiculuously small at full screen
 - [X] Deal with window size changes
 - [ ] Deal with gamepad disconnecting during play
 - [ ] Investigate augmenting/replacing the SceneState with a .NET library for state machines

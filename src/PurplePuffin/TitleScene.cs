@@ -48,7 +48,12 @@ public class TitleScene : Scene
         var message = "Title scene";
         var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
         
-        // TODO: title screen text is not centered now that we're launching in fullscreen for some reason
+        // TODO: DrawString is adversely affected by our setting a scale > 1 on the _spriteBatch. Currently this only
+        // happens in fullscreen mode. You can test this by hardcoding _spriteScale to x=1, y=1.
+        // Best quick solution might be to pass in a scaled _graphicsSpriteBatch and an unscaled _textSpriteBatch.
+        // Will need to test how to coordinate the batch begin/end (in parallel? in sequence? (ugh, would end up
+        // needing two different Draw methods probably!)
+        System.Diagnostics.Debug.WriteLine(_graphicsDevice.Viewport.Width + ", " + _graphicsDevice.Viewport.Height);
         var titlePos = new Vector2(_graphicsDevice.Viewport.Width / 2, _graphicsDevice.Viewport.Height / 2);
 
         _spriteBatch.DrawString(SharedContent.ArialFont, message, titlePos, Color.LightGreen,
