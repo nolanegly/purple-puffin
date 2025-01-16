@@ -20,8 +20,9 @@ public class PurplePuffinGame : Game
     public const int VirtualWidth = 1920;
     public const int VirtualHeight = 1080;
     
-    // TODO: this should be a compiler directive, to avoid doing the same logic checks over and over again at runtime.
-    public const bool AllowSuboptimalResolution = false;
+    // TODO: these should be compiler directives, to avoid doing the same logic checks over and over again at runtime.
+    public const bool AllowSuboptimalResolution = false; // Don't let the game run smaller than virtual resolution
+    public const bool PreserveAspectRatio = false; // Apply letter/pillar boxing to prevent aspect ratio distortion
     
     private GraphicsDeviceManager _graphics;
     // Dimensions of the screen before toggling into fullsize, so they can be restored when toggling out.
@@ -367,7 +368,7 @@ public class PurplePuffinGame : Game
         _graphics.PreferredBackBufferHeight = VirtualHeight;
         _graphics.PreferredBackBufferWidth = VirtualWidth;
         
-        // Initialize our rendering area and scaling
+        // Now that we've set our buffer size, initialize our rendering area and scaling
         UpdateTargetRenderAreaAndScaling();
     }
     
@@ -384,6 +385,7 @@ public class PurplePuffinGame : Game
             if (AllowSuboptimalResolution == false)
             {
                 // If below virtual resolution, force suboptimal size back to at least our virtual size
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: resizing back buffer size back to {VirtualWidth}x{VirtualHeight}");
                 _graphics.PreferredBackBufferHeight = VirtualHeight;
                 _graphics.PreferredBackBufferWidth = VirtualWidth;
                 _graphics.ApplyChanges();
@@ -395,38 +397,41 @@ public class PurplePuffinGame : Game
                 _graphics.GraphicsDevice.Viewport = new Viewport(0, 0, actualWidth, actualHeight, 0, 1);
             }
         }
-        // Otherwise, if at least one dimension exceeds virtual resolution, apply letterboxing/pillarboxing if needed.
-        else if (actualWidth > VirtualWidth || actualHeight > VirtualHeight)
+        // The display area is at least the size of our virtual resolution
+        else
         {
-            Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: at least one dimension of {actualWidth}x{actualHeight} exceeds virtual, applying boxing");
-
-            var maxRepeatsX = actualWidth / VirtualWidth;
-            var maxRepeatsY = actualHeight / VirtualHeight;
-            if (maxRepeatsX != maxRepeatsY)
+            if (PreserveAspectRatio == true)
             {
-                // Don't repeat unevenly, e.g. twice horizontally and once vertically. This will distort the output.
-                var restrictedRepeat = Math.Min(maxRepeatsX, maxRepeatsY);
-                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
-                maxRepeatsX = restrictedRepeat;
-                maxRepeatsY = restrictedRepeat;
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: applying any needed boxing for {actualWidth}x{actualHeight} to be drawn at aspect ratio");
+
+                var maxRepeatsX = actualWidth / VirtualWidth;
+                var maxRepeatsY = actualHeight / VirtualHeight;
+                if (maxRepeatsX != maxRepeatsY)
+                {
+                    // Don't repeat unevenly, e.g. twice horizontally and once vertically. This will distort the output.
+                    var restrictedRepeat = Math.Min(maxRepeatsX, maxRepeatsY);
+                    Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: restricting repeat to {restrictedRepeat} (X repeats {maxRepeatsX}, Y repeats {maxRepeatsY})");
+                    maxRepeatsX = restrictedRepeat;
+                    maxRepeatsY = restrictedRepeat;
+                }
+            
+                // Calculate the padding needed for the number of increments on each dimension.
+                var totalHorizontalWidth = VirtualWidth * maxRepeatsX;
+                var horizontalPadNeeded = (actualWidth - totalHorizontalWidth) / 2;
+                Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
+            
+                var totalVerticalHeight = VirtualHeight * maxRepeatsY;
+                var verticalPadNeeded = (actualHeight - totalVerticalHeight) / 2;
+                Debug.WriteLine($"UpdateSpriteScale: Y repeats {maxRepeatsY} times with {totalVerticalHeight} total height and {verticalPadNeeded} vertical pad");
+            
+                // Restrict drawing to aspect ratio correct area.
+                _graphics.GraphicsDevice.Viewport =
+                    new Viewport(horizontalPadNeeded, verticalPadNeeded,
+                        totalHorizontalWidth, totalVerticalHeight, 0, 1);
             }
-            
-            // Calculate the padding needed for the number of increments on each dimension.
-            var totalHorizontalWidth = VirtualWidth * maxRepeatsX;
-            var horizontalPadNeeded = (actualWidth - totalHorizontalWidth) / 2;
-            Debug.WriteLine($"UpdateTargetRenderAreaAndScaling: X repeats {maxRepeatsX} times with {totalHorizontalWidth} total width and {horizontalPadNeeded} horizontal pad");            
-            
-            var totalVerticalHeight = VirtualHeight * maxRepeatsY;
-            var verticalPadNeeded = (actualHeight - totalVerticalHeight) / 2;
-            Debug.WriteLine($"UpdateSpriteScale: Y repeats {maxRepeatsY} times with {totalVerticalHeight} total height and {verticalPadNeeded} vertical pad");
-            
-            // Restrict drawing to aspect ratio correct area.
-            _graphics.GraphicsDevice.Viewport =
-                new Viewport(horizontalPadNeeded, verticalPadNeeded, 
-                    totalHorizontalWidth, totalVerticalHeight, 0, 1);
         }
         
-        // Now that we've established what area of screen to draw into, determine the needed scaling to fill it.
+        // Now that we've established what area of screen to draw into (if needed), determine the needed scaling to fill it.
         var scaleX = _graphics.GraphicsDevice.Viewport.Width / (float) VirtualWidth;
         var scaleY = _graphics.GraphicsDevice.Viewport.Height / (float) VirtualHeight;
         Debug.WriteLine($"UpdateSpriteScale: setting sprite scale to {scaleX} X and {scaleY} Y");
