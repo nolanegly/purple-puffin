@@ -282,7 +282,7 @@ public class PurplePuffinGame : Game
         }
         else if (_inputState.IsKeyTriggered(Keys.I))
         {
-            // 2x our virtual/target resolution
+            // larger than our virtual/target resolution
             _graphics.PreferredBackBufferHeight = 1440;
             _graphics.PreferredBackBufferWidth = 2560;
             _graphics.ApplyChanges();
@@ -290,7 +290,8 @@ public class PurplePuffinGame : Game
         }
         else if (_inputState.IsKeyTriggered(Keys.O))
         {
-            // 3x our virtual/target resolution (native display resolution)
+            // 2x our virtual/target resolution (native display resolution)
+            // This will only display actual size when in full screen mode.
             _graphics.PreferredBackBufferHeight = 2160;
             _graphics.PreferredBackBufferWidth = 3840;
             _graphics.ApplyChanges();
