@@ -273,48 +273,7 @@ public class PurplePuffinGame : Game
                 _sceneState = SceneState.FromDefinition(SceneStateDefinition.GamePlay);
         }
 
-        CheckForScaleExperimentChanges();
-        
         base.Update(gameTime);
-    }
-
-    private void CheckForScaleExperimentChanges()
-    {
-        // Convenience method to quickly toggle between some specific resolutions for testing.
-        
-        if (_inputState.IsKeyTriggered(Keys.Y))
-        {
-            // 0.833% of our virtual/target resolution (but still same aspect ratio)
-            _graphics.PreferredBackBufferHeight = 900;
-            _graphics.PreferredBackBufferWidth = 1600;
-            _graphics.ApplyChanges();
-            UpdateTargetRenderAreaAndScaling();
-        }
-        else if (_inputState.IsKeyTriggered(Keys.U))
-        {
-            // Our virtual/target resolution
-            _graphics.PreferredBackBufferHeight = 1080;
-            _graphics.PreferredBackBufferWidth = 1920;
-            _graphics.ApplyChanges();
-            UpdateTargetRenderAreaAndScaling();
-        }
-        else if (_inputState.IsKeyTriggered(Keys.I))
-        {
-            // larger than our virtual/target resolution
-            _graphics.PreferredBackBufferHeight = 1440;
-            _graphics.PreferredBackBufferWidth = 2560;
-            _graphics.ApplyChanges();
-            UpdateTargetRenderAreaAndScaling();
-        }
-        else if (_inputState.IsKeyTriggered(Keys.O))
-        {
-            // 2x our virtual/target resolution (native display resolution)
-            // This will only display actual size when in full screen mode.
-            _graphics.PreferredBackBufferHeight = 2160;
-            _graphics.PreferredBackBufferWidth = 3840;
-            _graphics.ApplyChanges();
-            UpdateTargetRenderAreaAndScaling();
-        }
     }
 
     protected override void Draw(GameTime gameTime)
