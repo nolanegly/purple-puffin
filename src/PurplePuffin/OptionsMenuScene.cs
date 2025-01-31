@@ -12,20 +12,14 @@ namespace PurplePuffin;
 
 public class OptionsMenuScene : Scene
 {
-    private readonly InputState _inputState;
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly SpriteBatch _spriteBatch;
     private readonly Desktop _desktop = new();
     private readonly List<EventBase> _eventsToReturn = new();
 
-    public OptionsMenuScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public OptionsMenuScene(SceneResources resources) : base(resources)
     {
-        SceneType = SceneTypeEnum.OptionsMenu;
-        
-        _inputState = inputState;
-        _graphicsDevice = graphicsDevice;
-        _spriteBatch = spriteBatch;
     }
+
+    public override SceneTypeEnum SceneType { get; } = SceneTypeEnum.OptionsMenu;
 
     public override void LoadContent(SharedContent sharedContent)
     {
@@ -70,6 +64,6 @@ public class OptionsMenuScene : Scene
     {
         _desktop.Render();
         
-        DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);        
+        DrawDefaultTransitionIfNeeded(_spriteBatch);
     }
 }

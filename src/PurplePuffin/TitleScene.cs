@@ -9,22 +9,16 @@ namespace PurplePuffin;
 
 public class TitleScene : Scene
 {
-    private readonly InputState _inputState;
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
 
     private TitleSceneStateEnum _state = TitleSceneStateEnum.NotYetDisplayed;
     private TimeSpan? _timeSinceFirstUpdate;
 
-    public TitleScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public TitleScene(SceneResources resources) : base(resources)
     {
-        SceneType = SceneTypeEnum.Title;
-
-        _inputState = inputState;
-        _graphicsDevice = graphicsDevice;
-        _spriteBatch = spriteBatch;
     }
+
+    public override SceneTypeEnum SceneType { get; } = SceneTypeEnum.Title;
 
     public override EventBase[] Update(GameTime gameTime)
     {
@@ -47,19 +41,13 @@ public class TitleScene : Scene
     {
         var message = "Title scene";
         var messageOrigin = SharedContent.ArialFont.MeasureString(message) / 2;
-        
-        // TODO: DrawString is adversely affected by our setting a scale > 1 on the _spriteBatch. Currently this only
-        // happens in fullscreen mode. You can test this by hardcoding _spriteScale to x=1, y=1.
-        // Best quick solution might be to pass in a scaled _graphicsSpriteBatch and an unscaled _textSpriteBatch.
-        // Will need to test how to coordinate the batch begin/end (in parallel? in sequence? (ugh, would end up
-        // needing two different Draw methods probably!)
-        System.Diagnostics.Debug.WriteLine(_graphicsDevice.Viewport.Width + ", " + _graphicsDevice.Viewport.Height);
         var titlePos = new Vector2(_graphicsDevice.Viewport.Width / 2, _graphicsDevice.Viewport.Height / 2);
 
-        _spriteBatch.DrawString(SharedContent.ArialFont, message, titlePos, Color.LightGreen,
+        _textBatch.DrawString(SharedContent.ArialFont, message, titlePos, Color.LightGreen,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
         
-        DrawDefaultTransitionIfNeeded(_graphicsDevice, _spriteBatch);
+        DrawDefaultTransitionIfNeeded(_spriteBatch);
+        DrawDefaultTransitionIfNeeded(_textBatch);
     }
     
     private void WaitTwoSecondsAndThenAdvanceToMainMenu(GameTime gameTime)

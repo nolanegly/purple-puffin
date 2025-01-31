@@ -7,15 +7,24 @@ namespace PurplePuffin.SceneManagement;
 
 public abstract class Scene
 {
+    protected readonly InputState _inputState;
+    protected readonly GraphicsDevice _graphicsDevice;
+    protected readonly SpriteBatch _spriteBatch;
+    protected readonly SpriteBatch _textBatch;
     protected SharedContent SharedContent;
     
     private float _transitionAlpha = 0.0f;
     private TransitionStateEnum _transitionState = TransitionStateEnum.None;
     
-    // Every scene should set this in their constructor.
-    // I debated making it an abstract property to ensure it got implemented,
-    // but am avoiding simple, "pass-through" getter/setters 
-    public SceneTypeEnum SceneType = SceneTypeEnum.Uninitialized;
+    public abstract SceneTypeEnum SceneType { get; }
+
+    protected Scene(SceneResources resources)
+    {
+        _inputState = resources.InputState;
+        _graphicsDevice = resources.GraphicsDevice;
+        _spriteBatch = resources.SpriteBatch;
+        _textBatch = resources.TextBatch;
+    }
 
     /// <summary>
     /// Instructs scene manager whether this scene wants to be drawn or not.
@@ -105,16 +114,16 @@ public abstract class Scene
     /// <summary>
     /// Invoke in your Draw() method when you aren't handling scene transitions yourself 
     /// </summary>
-    protected void DrawDefaultTransitionIfNeeded(GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    protected void DrawDefaultTransitionIfNeeded(SpriteBatch targetBatch)
     {
         if (_transitionState == TransitionStateEnum.None || ShouldBeDrawn == false) return;
 
         // don't draw the inbound scene on the fade out, or the outbound scene on the fade in
         if (ShouldBeDrawn == false) return;
         
-        spriteBatch.Draw(SharedContent.PlaceholderPixel, new Vector2(0, 0), null, 
+        targetBatch.Draw(SharedContent.PlaceholderPixel, new Vector2(0, 0), null,
             new Color(0, 0, 0, _transitionAlpha), 0f, Vector2.Zero, 
-            new Vector2(graphicsDevice.Viewport.Width, graphicsDevice.Viewport.Height),
+            new Vector2(_graphicsDevice.Viewport.Width, _graphicsDevice.Viewport.Height),
             SpriteEffects.None, 0);
     }
 }

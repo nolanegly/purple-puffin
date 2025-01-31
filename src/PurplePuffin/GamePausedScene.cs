@@ -9,13 +9,9 @@ namespace PurplePuffin;
 
 public class GamePausedScene : Scene
 {
-    private readonly InputState _inputState;
-    private readonly GraphicsDevice _graphicsDevice;
-    private readonly SpriteBatch _spriteBatch;
     private readonly List<EventBase> _eventsToReturn = new();
     
     private SharedContent _sharedContent;
-    private Vector2 _centerTopScene;
     private float _messageOffset = 0.0f;
     private int _messageDirection = 1;
     private float _messageAlpha = 1.0f;
@@ -23,21 +19,15 @@ public class GamePausedScene : Scene
     private TransitionStateEnum _transitionState = TransitionStateEnum.None;
     
 
-    public GamePausedScene(InputState inputState, GraphicsDevice graphicsDevice, SpriteBatch spriteBatch)
+    public GamePausedScene(SceneResources sceneResources) : base(sceneResources)
     {
-        SceneType = SceneTypeEnum.GamePaused;
-
-        _inputState = inputState;
-        _graphicsDevice = graphicsDevice;
-        _spriteBatch = spriteBatch;
     }
+
+    public override SceneTypeEnum SceneType { get; } = SceneTypeEnum.GamePaused;
 
     public void LoadContent(SharedContent sharedContent)
     {
         _sharedContent = sharedContent;
-        
-        var viewport = _graphicsDevice.Viewport;
-        _centerTopScene = new Vector2(viewport.Width / 2, viewport.Height / 4);        
     }
     
     public override EventBase[] Update(GameTime gameTime)
@@ -71,9 +61,10 @@ public class GamePausedScene : Scene
     {
         var message = "-=[ PAUSE ]=-";
         var messageOrigin = _sharedContent.ArialFont.MeasureString(message) / 2;
-        var messagePos = new Vector2(_centerTopScene.X + (_centerTopScene.X * _messageOffset), _centerTopScene.Y);
+        var centerTopScene = new Vector2(_graphicsDevice.Viewport.Width / 2, _graphicsDevice.Viewport.Height / 4);
+        var messagePos = new Vector2(centerTopScene.X + (centerTopScene.X * _messageOffset), centerTopScene.Y);
         var color = Color.LightGreen * _messageAlpha;
-        _spriteBatch.DrawString(_sharedContent.ArialFont, message, messagePos, color,
+        _textBatch.DrawString(_sharedContent.ArialFont, message, messagePos, color,
             0, messageOrigin, 1.0f, SpriteEffects.None, 0.5f);
     }
     

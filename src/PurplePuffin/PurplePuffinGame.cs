@@ -33,6 +33,8 @@ public class PurplePuffinGame : Game
     private SpriteBatch _spriteBatch;
     private Matrix _spriteScale;
 
+    private SpriteBatch _textBatch;
+
     private SharedContent _sharedContent;
     
     private SceneState _sceneState;
@@ -81,16 +83,25 @@ public class PurplePuffinGame : Game
         MediaPlayer.Volume = Defaults.MusicPlayerVolume;
         
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+        _textBatch = new SpriteBatch(GraphicsDevice);
 
-        _titleScene = new TitleScene(_inputState, GraphicsDevice, _spriteBatch);
+        var resources = new SceneResources
+        {
+            InputState = _inputState,
+            GraphicsDevice = GraphicsDevice,
+            SpriteBatch = _spriteBatch,
+            TextBatch = _textBatch
+        };
+
+        _titleScene = new TitleScene(resources);
         _scenes.Add(_titleScene);
-        _mainMenuScene = new MainMenuScene(_inputState, GraphicsDevice, _spriteBatch);
+        _mainMenuScene = new MainMenuScene(resources);
         _scenes.Add(_mainMenuScene);
-        _optionsMenuScene = new OptionsMenuScene(_inputState, GraphicsDevice, _spriteBatch);
+        _optionsMenuScene = new OptionsMenuScene(resources);
         _scenes.Add(_optionsMenuScene);
-        _gameScene = new GameScene(_inputState, GraphicsDevice, _spriteBatch);
+        _gameScene = new GameScene(resources);
         _scenes.Add(_gameScene);
-        _gamePausedScene = new GamePausedScene(_inputState, GraphicsDevice, _spriteBatch);
+        _gamePausedScene = new GamePausedScene(resources);
         _scenes.Add(_gamePausedScene);
 
         _sceneState = SceneState.FromDefinition(Defaults.InitialScene);
@@ -313,6 +324,7 @@ public class PurplePuffinGame : Game
         GraphicsDevice.Clear(Color.Black);
         
         _spriteBatch.Begin(transformMatrix: _spriteScale);
+        _textBatch.Begin();
 
         foreach (var activeSceneType in _sceneState.ActiveScenes)
         {
@@ -322,6 +334,7 @@ public class PurplePuffinGame : Game
         }
         
         _spriteBatch.End();
+        _textBatch.End();
 
         base.Draw(gameTime);
     }
@@ -496,7 +509,7 @@ public class PurplePuffinGame : Game
     private static void ApplyDebugConvenienceOverrides()
     {
         Defaults.MusicPlayerVolume = 0.0f; // annoying while coding
-        Defaults.StartFullScreen = false; // takes less time to launch
-        Defaults.InitialScene = SceneStateDefinition.GamePlay; // jump straight to the scene being worked on
+        //Defaults.StartFullScreen = false; // takes less time to launch
+        //Defaults.InitialScene = SceneStateDefinition.GamePlay; // jump straight to the scene being worked on
     }
 }
